@@ -19,11 +19,23 @@ bot.command("bili", async (ctx) => {
   // }
   let text = ctx.message.text;
   // @ts-ignore
+  console.info(ctx.message.reply_to_message);
+  // @ts-ignore
   if (ctx.message.reply_to_message && ctx.message.reply_to_message["text"]) {
     // @ts-ignore
     text = ctx.message.reply_to_message["text"] + "\n" + text;
   }
-  console.log(text);
+  // console.log(ctx.message);
+    const urls: string[] = [];
+
+      ctx.message.entities?.forEach(entity => {
+	          if (entity.type === 'text_link' && entity.url) {
+  urls.push(entity.url);
+	    }
+   });
+
+  text = urls.join(" ") + text;
+
   const matches = /BV[a-zA-Z0-9]+/i.exec(text);
   if (!matches) {
     return;
@@ -42,8 +54,8 @@ bot.command("bili", async (ctx) => {
   const success = await api.add(bv);
   (async () => {
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-    for (let i = 0; i < 15; i++) {
-      await sleep(20000 + 2500 * i);
+    for (let i = 0; i < 30; i++) {
+      await sleep(28000 + 4500 * i);
       const result = await api.check(bv);
       if (result.isSome()) {
         try {
