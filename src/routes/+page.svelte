@@ -25,10 +25,9 @@
     }) || [];
 </script>
 
-<h1>Biliarchiver Bot</h1>
 <main>
   <h2>Biliarchiver Bot Status</h2>
-  <p>Running: {data?.archived?.success || "down"}</p>
+  <p id="general">Running: {data?.archived?.success || "down"}</p>
   <h2>Archived recently</h2>
   <ul>
     {#each items as item}
@@ -45,7 +44,7 @@
         </div>
         <div class="cover">
           <a href={item.link}>
-            <img src={item.cover} alt="cover" />
+            <img src={item.cover} alt="cover" loading="lazy" />
             <img
               class="hover-icon"
               src="ia-logo.svg"
@@ -61,9 +60,9 @@
 
 <style>
   main {
-    margin: 2px;
+    margin: 2em 0;
     border-radius: 4px;
-    background-color: var(--tg-theme-bg-color);
+    /* background-color: var(--tg-theme-bg-color); */
     color: var(--tg-theme-text-color);
     font-family: "Noto Sans CJK SC", "Noto Sans", "HarmonyOS Sans", "Mi Sans",
       "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
@@ -73,15 +72,25 @@
   time {
     font-family: "IBM Plex Mono", "Noto Sans Mono", Consolas, monospace;
   }
+  #general {
+    font-size: 20px;
+    margin: 12px 20px;
+  }
   ul {
     list-style: none;
     padding: 0;
   }
   li {
-    margin: 1em 0;
+    margin: 1em 8px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     flex-direction: column;
+    padding-top: 6px;
+    padding-bottom: 32px;
+  }
+  li:nth-child(odd) {
+    background-color: var(--tg-theme-secondary-bg-color);
   }
   h3 {
     margin: 4px;
@@ -97,6 +106,7 @@
     transition:
       filter 0.2s ease-out,
       transform 0.2s ease-out;
+    border-radius: 6px;
   }
   img[alt="cover"]:hover {
     filter: brightness(1.3) blur(3px) grayscale(0) hue-rotate(10deg);
@@ -131,7 +141,7 @@
   a.bvid {
     padding: 4px;
     font-size: 90%;
-    border-radius: 2px;
+    border-radius: 4px;
     color: var(--tg-theme-button-text-color);
     background-color: var(--tg-theme-button-color);
     text-decoration: none;

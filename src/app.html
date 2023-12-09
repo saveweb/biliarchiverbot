@@ -19,7 +19,8 @@
   </body>
   <style>
     body {
-      background-color: var(--tg-theme-secondary-bg-color);
+      /* background-color: var(--tg-theme-secondary-bg-color); */
+      background-color: var(--tg-theme-bg-color);
       overflow-x: hidden;
       margin: 0.5em 0;
     }
@@ -39,6 +40,16 @@
     h5,
     h6 {
       text-align: center;
+    }
+
+    /* disable animation when prefers-reduced-motion is enabled */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
     }
   </style>
 </html>
