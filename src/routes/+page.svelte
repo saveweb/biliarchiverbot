@@ -2,7 +2,6 @@
   import type { Config } from "@sveltejs/kit";
   import type { PageData } from "./$types";
   import Bvid from "$lib/bv";
-  import { onMount } from "svelte";
   export let data: PageData;
   export const config: Config = {
     runtime: "edge",
@@ -14,34 +13,16 @@
 
   $: items =
     data?.archived?.items.map((x) => {
-      return { cover: "", ...x } satisfies {
+      const bv = new Bvid(x.bvid);
+      return {
+        cover: `https://archive.org/services/img/${bv.toIdentifier()}/full/pct:400/0/default.jpg`,
+        link: bv.getItemUrl().toString(),
+        ...x,
+      } satisfies {
         cover: string;
+        link: string;
       } & typeof x;
     }) || [];
-
-  onMount(async () => {
-    // async function getCover(bvid: string): Promise<string> {
-    //   try {
-    //     let endpoint = "/api?" + new URLSearchParams({ bvid });
-    //     const res = await fetch(endpoint, {
-    //       method: "GET",
-    //     });
-    //     const data = await res.json();
-    //     console.log(data);
-    //     return data?.url;
-    //   } catch (e) {
-    //     console.error(e);
-    //     return "";
-    //   }
-    // }
-    items.forEach((item) => {
-      // getCover(item.bvid).then((src) => {
-      //   item.cover = src;
-      // });
-      const bv = new Bvid(item.bvid);
-      item.cover = `https://archive.org/services/img/BiliBili-${bv.toIdentifier()}/full/pct:400/0/default.jpg`;
-    });
-  });
 </script>
 
 <main>
@@ -51,7 +32,7 @@
   <ul>
     {#each items as item}
       <li>
-        <div>
+        <div class="info">
           <a class="bvid" href="https://www.bilibili.com/video/{item.bvid}"
             >{item.bvid}</a
           >
@@ -59,8 +40,15 @@
           <storng>{item.status}</storng>
           <span>{item.status === "finished" ? "✅" : "❌"}</span>
         </div>
-        <div>
-          <img src={item.cover} alt="cover" />
+        <div class="cover">
+          <a href={item.link}>
+            <img src={item.cover} alt="cover" />
+            <img
+              class="hover-icon"
+              src="ia-logo.svg"
+              alt="Play on Internet Archive"
+            />
+          </a>
         </div>
       </li>
     {/each}
@@ -83,6 +71,63 @@
     padding: 0;
   }
   li {
+    margin: 1em 0;
     display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+  .info {
+    font-size: 20px;
+    margin: 12px 0;
+  }
+  img[alt="cover"] {
+    width: 400px;
+    display: block;
+    margin: auto;
+    transition:
+      filter 0.2s ease-out,
+      transform 0.2s ease-out;
+  }
+  img[alt="cover"]:hover {
+    filter: brightness(1.3) blur(3px) grayscale(0) hue-rotate(10deg);
+    transform: scale(1.04);
+  }
+  img[alt="cover"]:active {
+    filter: brightness(0.9) blur(0) grayscale(0.5) hue-rotate(-10deg);
+    transform: scale(0.96);
+  }
+  .cover a {
+    position: relative;
+    user-select: none;
+  }
+  .hover-icon {
+    user-select: none;
+    pointer-events: none;
+    position: absolute;
+    top: 70px;
+    left: 150px;
+    width: 100px;
+    height: 100px;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+    margin: auto;
+  }
+  .cover img:hover + .hover-icon {
+    opacity: 0.8;
+  }
+
+  a.bvid {
+    background-color: var(--tg-theme-button-color);
+    text-decoration: none;
+    margin: 4px;
+    filter: brightness(1);
+    transform: filter 0.2s ease-out;
+  }
+  a.bvid:hover {
+    filter: brightness(1.1);
+  }
+  a.bvid:active {
+    filter: brightness(0.9);
   }
 </style>
