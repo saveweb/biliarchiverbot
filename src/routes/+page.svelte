@@ -15,7 +15,7 @@
     data?.archived?.items.map((x) => {
       const bv = new Bvid(x.bvid);
       return {
-        cover: `https://archive.org/services/img/${bv.toIdentifier()}/full/pct:400/0/default.jpg`,
+        cover: `https://archive.org/services/img/${bv.toIdentifier()}/full/pct:320/0/default.jpg`,
         link: bv.getItemUrl().toString(),
         ...x,
       } satisfies {
@@ -81,7 +81,7 @@
     margin: 12px 0;
   }
   img[alt="cover"] {
-    width: 400px;
+    width: 320px;
     display: block;
     margin: auto;
     transition:
@@ -118,6 +118,7 @@
   }
 
   a.bvid {
+    color: var(--tg-theme-button-text-color);
     background-color: var(--tg-theme-button-color);
     text-decoration: none;
     margin: 4px;
