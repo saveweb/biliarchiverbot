@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">
@@ -13,17 +14,7 @@
     body {
       background-color: var(--tg-theme-bg-color);
     }
-    p,
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    ul,
-    ol,
-    li,
-    div {
+    body > * {
       color: var(--tg-theme-text-color);
     }
     a {
