@@ -25,8 +25,9 @@
     }) || [];
 </script>
 
+<h1>Biliarchiver Bot</h1>
 <main>
-  <h1>Biliarchiver Bot Status</h1>
+  <h2>Biliarchiver Bot Status</h2>
   <p>Running: {data?.archived?.success || "down"}</p>
   <h2>Archived recently</h2>
   <ul>
@@ -47,6 +48,7 @@
               class="hover-icon"
               src="ia-logo.svg"
               alt="Play on Internet Archive"
+              width="70px"
             />
           </a>
         </div>
@@ -57,6 +59,9 @@
 
 <style>
   main {
+    margin: 2px;
+    border-radius: 4px;
+    background-color: var(--tg-theme-bg-color);
     color: var(--tg-theme-text-color);
     font-family: "Noto Sans CJK SC", "Noto Sans", "HarmonyOS Sans", "Mi Sans",
       "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
@@ -104,8 +109,9 @@
     user-select: none;
     pointer-events: none;
     position: absolute;
-    top: 70px;
-    left: 150px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 100px;
     height: 100px;
     margin: 0;
@@ -118,12 +124,14 @@
   }
 
   a.bvid {
+    padding: 4px;
+    border-radius: 2px;
     color: var(--tg-theme-button-text-color);
     background-color: var(--tg-theme-button-color);
     text-decoration: none;
     margin: 4px;
     filter: brightness(1);
-    transform: filter 0.2s ease-out;
+    transition: filter 0.2s ease-out;
   }
   a.bvid:hover {
     filter: brightness(1.1);
