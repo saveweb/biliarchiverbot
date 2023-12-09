@@ -34,9 +34,11 @@
     {#each items as item}
       <li>
         <div class="info">
-          <a class="bvid" href="https://www.bilibili.com/video/{item.bvid}"
-            >{item.bvid}</a
-          >
+          <h3>
+            <a class="bvid" href="https://www.bilibili.com/video/{item.bvid}"
+              >{item.bvid}</a
+            >
+          </h3>
           <time class="hint">{timestamp2time(item.added_time)}</time>
           <storng>{item.status}</storng>
           <span>{item.status === "finished" ? "✅" : "❌"}</span>
@@ -69,7 +71,7 @@
   }
   .bvid,
   time {
-    font-family: monospace;
+    font-family: "IBM Plex Mono", "Noto Sans Mono", Consolas, monospace;
   }
   ul {
     list-style: none;
@@ -80,6 +82,9 @@
     display: flex;
     align-items: center;
     flex-direction: column;
+  }
+  h3 {
+    margin: 4px;
   }
   .info {
     font-size: 20px;
@@ -125,6 +130,7 @@
 
   a.bvid {
     padding: 4px;
+    font-size: 90%;
     border-radius: 2px;
     color: var(--tg-theme-button-text-color);
     background-color: var(--tg-theme-button-color);
