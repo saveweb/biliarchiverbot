@@ -5,6 +5,10 @@
   export const config: Config = {
     runtime: "edge",
   };
+
+  function timestamp2time(i: number) {
+    return new Date(i * 1000).toLocaleDateString();
+  }
 </script>
 
 <main>
@@ -15,8 +19,9 @@
     {#each data?.archived?.items || [] as { added_time, bvid, status }}
       <li>
         <a class="bvid" href="https://www.bilibili.com/video/{bvid}">{bvid}</a>
-        <time>{added_time}</time>
-        <mark>{status}</mark>
+        <time class="hint">{timestamp2time(added_time)}</time>
+        <storng>{status}</storng>
+        <span>{status === "finished" ? "✅" : "❌"}</span>
       </li>
     {/each}
   </ul>
@@ -32,5 +37,9 @@
   .bvid,
   time {
     font-family: monospace;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
   }
 </style>
