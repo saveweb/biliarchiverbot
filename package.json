@@ -21,6 +21,7 @@
 	"type": "module",
 	"dependencies": {
 		"fast-xml-parser": "^4.3.2",
+		"lru-cache": "^10.1.0",
 		"ts-results-es": "4.1.0-alpha.1"
 	}
 }

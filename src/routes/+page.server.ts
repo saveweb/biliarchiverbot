@@ -1,5 +1,5 @@
 import { Result, Ok, Err } from "ts-results-es";
-import type { PageLoad } from './$types';
+import type {  PageServerLoad } from './$types';
 
 interface BasicStatus {
     status: string;
@@ -45,6 +45,7 @@ async function getArchived(): Promise<Result<ArchiveResponse, unknown>> {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data: ArchiveResponse = await response.json();
+        data.items.sort((a, b) => b.added_time - a.added_time);
         return Ok(data);
     } catch (error) {
         return Err(error);
@@ -53,7 +54,7 @@ async function getArchived(): Promise<Result<ArchiveResponse, unknown>> {
 
 
 
-export const load: PageLoad = async (params: unknown) => {
+export const load: PageServerLoad = async (params: unknown) => {
     return {
         status: (await getStatus()).unwrapOr(null),
         archived: (await getArchived()).unwrapOr(null),
