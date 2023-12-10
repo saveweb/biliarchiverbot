@@ -1,6 +1,8 @@
 import { Telegraf } from "telegraf";
 import { BiliArchiver } from "./api";
 import Bvid from "./bv";
+import resolveB23 from "./b23";
+import * as MARKUP from "./markup";
 
 const token = process.env.BILIARCHIVERBOT;
 if (!token) {
@@ -26,16 +28,16 @@ bot.command("bili", async (ctx) => {
     text = ctx.message.reply_to_message["text"] + "\n" + text;
   }
   // console.log(ctx.message);
-    const urls: string[] = [];
+  const urls: string[] = [];
 
-      ctx.message.entities?.forEach(entity => {
-	          if (entity.type === 'text_link' && entity.url) {
-  urls.push(entity.url);
-	    }
-   });
+  ctx.message.entities?.forEach((entity) => {
+    if (entity.type === "text_link" && entity.url) {
+      urls.push(entity.url);
+    }
+  });
 
   text = urls.join(" ") + text;
-
+  text = await resolveB23(text);
   const matches = /BV[a-zA-Z0-9]+/i.exec(text);
   if (!matches) {
     return;
@@ -52,17 +54,37 @@ bot.command("bili", async (ctx) => {
   }
 
   const success = await api.add(bv);
+
+  const reply_markup =
+    ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
+
   (async () => {
-    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
     for (let i = 0; i < 30; i++) {
       await sleep(28000 + 4500 * i);
       const result = await api.check(bv);
       if (result.isSome()) {
         try {
-          await ctx.reply(`🎉 Archive of ${bv} was done, item uploaded to\n${result.unwrap()}`, {
-            reply_to_message_id: ctx.message.message_id,
-          });
-        } catch (e) { }
+          const url = result.unwrap().toString();
+          await ctx.reply(
+            `\u{1F389} Archive of ${bv} was done, item uploaded to
+${url}`,
+            {
+              reply_to_message_id: ctx.message.message_id,
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "View archived",
+                      url,
+                    },
+                  ],
+                ],
+              },
+            }
+          );
+        } catch (e) {}
         return;
       }
     }
@@ -73,10 +95,12 @@ bot.command("bili", async (ctx) => {
       if (success) {
         await ctx.reply(`Archive request ${bv} was successfully sent.`, {
           reply_to_message_id: ctx.message.message_id,
+          reply_markup,
         });
       } else {
         await ctx.reply(`Archive request ${bv} failed.`, {
           reply_to_message_id: ctx.message.message_id,
+          reply_markup,
         });
       }
     } catch (e) {
@@ -88,14 +112,17 @@ bot.command("bili", async (ctx) => {
 bot.command("bilist", async (ctx) => {
   const queue = await api.queue();
   const text = queue.length
-    ? `**${queue.length} items in queue pending or archiving:**\n\n${queue.join(
-      "\n"
-    )}`
+    ? `**${queue.length} items in queue pending or archiving:**
+${queue.join("\n")}`
     : "**All items in queue has been archived**";
+  const reply_markup =
+    ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
   await ctx.replyWithMarkdownV2(text, {
     reply_to_message_id: ctx.message.message_id,
+    reply_markup,
   });
 });
+
 console.log("Start running…");
 bot.launch();
 
