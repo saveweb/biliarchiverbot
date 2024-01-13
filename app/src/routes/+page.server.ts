@@ -24,7 +24,7 @@ interface ArchiveResponse {
     items: ArchivedItem[];
 }
 
-const BASE = "http://hz1.server.saveweb.org:41835/";
+const BASE = "http://127.0.0.1:21232/";
 async function getStatus(): Promise<Result<BasicStatus, unknown>> {
     try {
         const response = await fetch(BASE);
