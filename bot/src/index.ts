@@ -5,15 +5,15 @@ import resolveB23 from "./b23";
 import * as MARKUP from "./markup";
 require('dotenv').config()
 
-const token = process.env.BILIARCHIVERBOT;
+const token = process.env.BILIARCHIVER_BOT;
 if (!token) {
   console.error("\x1b[31mBOT_TOKEN must be provided!\x1b[0m");
   process.exit(1);
 }
 const bot = new Telegraf(token);
-const apiBase = process.env.BILIARCHIVERAPI;
+const apiBase = process.env.BILIARCHIVER_API;
 if (!apiBase) {
-  throw new Error("\x1b[31mBILIARCHIVERAPI must be provided!\x1b[0m");
+  throw new Error("\x1b[31mBILIARCHIVER_API must be provided!\x1b[0m");
 }
 const api = new BiliArchiver(new URL(apiBase));
 
