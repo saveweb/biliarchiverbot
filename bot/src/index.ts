@@ -3,14 +3,19 @@ import { BiliArchiver } from "./api";
 import Bvid from "./bv";
 import resolveB23 from "./b23";
 import * as MARKUP from "./markup";
+require('dotenv').config()
 
-const token = process.env.BILIARCHIVERBOT;
+const token = process.env.BILIARCHIVER_BOT;
 if (!token) {
   console.error("\x1b[31mBOT_TOKEN must be provided!\x1b[0m");
   process.exit(1);
 }
 const bot = new Telegraf(token);
-const api = new BiliArchiver(new URL("http://hz1.server.saveweb.org:41835/"));
+const apiBase = process.env.BILIARCHIVER_API;
+if (!apiBase) {
+  throw new Error("\x1b[31mBILIARCHIVER_API must be provided!\x1b[0m");
+}
+const api = new BiliArchiver(new URL(apiBase));
 
 bot.command("start", Telegraf.reply("向我发送 BV 号以存档视频。"));
 bot.help((ctx) => ctx.reply("向我发送 BV 号以存档视频。我会进行正则匹配。"));

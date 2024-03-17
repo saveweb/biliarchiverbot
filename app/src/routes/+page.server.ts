@@ -1,5 +1,7 @@
 import { Result, Ok, Err } from "ts-results-es";
 import type {  PageServerLoad } from './$types';
+import { env } from '$env/dynamic/public';
+console.log(env.PUBLIC_BILIARCHIVERAPI);
 
 interface BasicStatus {
     status: string;
@@ -24,7 +26,7 @@ interface ArchiveResponse {
     items: ArchivedItem[];
 }
 
-const BASE = "http://127.0.0.1:21232/";
+const BASE = env.PUBLIC_BILIARCHIVERAPI || "http://127.0.0.1:21232/";
 async function getStatus(): Promise<Result<BasicStatus, unknown>> {
     try {
         const response = await fetch(BASE);
