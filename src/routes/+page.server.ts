@@ -1,7 +1,6 @@
 import { Result, Ok, Err } from "ts-results-es";
-import type {  PageServerLoad } from './$types';
 import { env } from '$env/dynamic/public';
-console.log(env.PUBLIC_BILIARCHIVERAPI);
+console.log(env.BILIARCHIVER_API);
 
 interface BasicStatus {
     status: string;
@@ -26,7 +25,7 @@ interface ArchiveResponse {
     items: ArchivedItem[];
 }
 
-const BASE = env.PUBLIC_BILIARCHIVERAPI || "http://127.0.0.1:21232/";
+const BASE = env.BILIARCHIVER_API || "http://127.0.0.1:21232/";
 async function getStatus(): Promise<Result<BasicStatus, unknown>> {
     try {
         const response = await fetch(BASE);
@@ -56,7 +55,7 @@ async function getArchived(): Promise<Result<ArchiveResponse, unknown>> {
 
 
 
-export const load: PageServerLoad = async (params: unknown) => {
+export const load = async (params: unknown) => {
     return {
         status: (await getStatus()).unwrapOr(null),
         archived: (await getArchived()).unwrapOr(null),
