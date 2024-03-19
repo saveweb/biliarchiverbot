@@ -1,7 +1,7 @@
 import type { InlineKeyboardMarkup } from "grammy/types";
-require("dotenv").config();
-const bot_username = process.env.BILIARCHIVER_USERNAME;
-let web_app_url = process.env.BILIARCHIVER_WEBAPP;
+import { env } from "$env/dynamic/private";
+const bot_username = env.BILIARCHIVER_USERNAME;
+let web_app_url = env.BILIARCHIVER_WEBAPP;
 if (!bot_username) {
   throw new Error("\x1b[31mBILIARCHIVER_USERNAME must be provided!\x1b[0m");
 }

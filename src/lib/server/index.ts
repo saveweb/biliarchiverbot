@@ -3,14 +3,14 @@ import { BiliArchiver } from "./api.js";
 import Bvid from "./bv.js";
 import resolveB23 from "./b23.js";
 import * as MARKUP from "./markup.js";
-import { env } from "$env/dynamic/public";
+import { env } from "$env/dynamic/private";
 
 const token = env.BILIARCHIVER_BOT;
 if (!token) {
   console.error("\x1b[31mBOT_TOKEN must be provided!\x1b[0m");
 }
 const bot = new Bot(token!);
-const apiBase = process.env.BILIARCHIVER_API;
+const apiBase = env.BILIARCHIVER_API;
 if (!apiBase) {
   throw new Error("\x1b[31mBILIARCHIVER_API must be provided!\x1b[0m");
 }

@@ -1,6 +1,5 @@
 import { Result, Ok, Err } from "ts-results-es";
-import { env } from '$env/dynamic/public';
-console.log(env.BILIARCHIVER_API);
+import { env } from '$env/dynamic/private';
 
 interface BasicStatus {
     status: string;
