@@ -8,6 +8,8 @@
     runtime: "edge",
   };
 
+  let scrollPosition = 0;
+
   function timestamp2time(i: number) {
     return new Date(i * 1000).toLocaleDateString();
   }
@@ -30,8 +32,12 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </svelte:head>
 <main>
-  <nav>
-    <h2>Biliarchiver Bot (<a href="/debug">{data?.archived?.success ? "Running" : "Down"}</a>)</h2>
+  <nav class={scrollPosition == 0 ? "" : "stuck"}>
+    <h2>
+      Biliarchiver Bot (<a href="/debug"
+        >{data?.archived?.success ? "Running" : "Down"}</a
+      >)
+    </h2>
   </nav>
   <ul>
     <List
@@ -39,6 +45,7 @@
       width="100vw"
       itemCount={items.length}
       itemSize={320}
+      bind:scrollPosition
     >
       <li
         slot="item"
@@ -79,7 +86,7 @@
     margin: 0;
     border-radius: 4px;
     /* background-color: var(--tg-theme-bg-color); */
-    color: var(--tg-theme-text-color);
+    color: var(--tg-theme-text-color, #f5f5f5);
     font-family: "Noto Sans CJK SC", "Noto Sans", "HarmonyOS Sans", "Mi Sans",
       "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
       "WenQuanYi Micro Hei", sans-serif;
@@ -102,13 +109,20 @@
     flex-direction: column;
     padding-top: 6px;
     padding-bottom: 32px;
+    transition: background-color 0.1s ease-out;
   }
-  li:nth-child(odd) {
-    background-color: var(--tg-theme-secondary-bg-color);
+  li:hover {
+    /* li:nth-child(odd) */
+    background-color: var(--tg-theme-secondary-bg-color, #313b43);
+    /* var(--tg-theme-section-bg-color, #282e33)!important; */
   }
   nav {
     position: sticky;
     height: 70px;
+    transition: box-shadow 0.2s ease-out;
+  }
+  nav.stuck {
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.4);
   }
   h3 {
     margin: 4px;
@@ -140,7 +154,7 @@
   }
   a {
     text-decoration: none;
-    color: var(--tg-theme-text-color);
+    color: var(--tg-theme-text-color, #f5f5f5);
     cursor: initial;
   }
   .hover-icon {
@@ -165,8 +179,8 @@
     padding: 4px;
     font-size: 90%;
     border-radius: 4px;
-    color: var(--tg-theme-button-text-color);
-    background-color: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color, #fff);
+    background-color: var(--tg-theme-button-color, #d27570);
     text-decoration: none;
     margin: 4px;
     filter: brightness(1);

@@ -29,7 +29,7 @@
     margin: 0;
     border-radius: 4px;
     /* background-color: var(--tg-theme-bg-color); */
-    color: var(--tg-theme-text-color);
+    color: var(--tg-theme-text-color, #f5f5f5);
     font-family: "Noto Sans CJK SC", "Noto Sans", "HarmonyOS Sans", "Mi Sans",
       "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
       "WenQuanYi Micro Hei", sans-serif;
