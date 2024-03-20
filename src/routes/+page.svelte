@@ -26,13 +26,26 @@
     }) || [];
 </script>
 
+<svelte:head>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</svelte:head>
 <main>
-  <h2>Biliarchiver Bot Status</h2>
-  <p id="general">Running: {data?.archived?.success || "down"}</p>
-  <h2>Archived recently</h2>
+  <nav>
+    <h2>Biliarchiver Bot (<a href="/debug">{data?.archived?.success ? "Running" : "Down"}</a>)</h2>
+  </nav>
   <ul>
-    <List height={650} width="100vw" itemCount={items.length} itemSize={320}>
-      <li slot="item" let:index let:style {style}>
+    <List
+      height="calc(100vh - 90px)"
+      width="100vw"
+      itemCount={items.length}
+      itemSize={320}
+    >
+      <li
+        slot="item"
+        let:index
+        let:style
+        style={style.replace("width: 100%;", "width: 90%;")}
+      >
         <div class="info">
           <h3>
             <a
@@ -63,7 +76,7 @@
 
 <style>
   main {
-    margin: 2em 0;
+    margin: 0;
     border-radius: 4px;
     /* background-color: var(--tg-theme-bg-color); */
     color: var(--tg-theme-text-color);
@@ -75,13 +88,10 @@
   time {
     font-family: "IBM Plex Mono", "Noto Sans Mono", Consolas, monospace;
   }
-  #general {
-    font-size: 20px;
-    margin: 12px 20px;
-  }
   ul {
     list-style: none;
     padding: 0;
+    margin: 0 auto;
   }
   li {
     margin: 1em 8px;
@@ -96,13 +106,16 @@
   li:nth-child(odd) {
     background-color: var(--tg-theme-secondary-bg-color);
   }
+  nav {
+    position: sticky;
+    height: 70px;
+  }
   h3 {
     margin: 4px;
   }
   .info {
     font-size: 20px;
     margin: 12px 0;
-    width: calc(100vw - 40px);
   }
   img[alt="cover"] {
     width: 320px;
@@ -124,6 +137,11 @@
   .cover a {
     position: relative;
     user-select: none;
+  }
+  a {
+    text-decoration: none;
+    color: var(--tg-theme-text-color);
+    cursor: initial;
   }
   .hover-icon {
     user-select: none;
@@ -162,6 +180,6 @@
   }
 
   * {
-    overflow: hidden!important;
+    overflow: hidden !important;
   }
 </style>
