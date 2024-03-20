@@ -1,5 +1,5 @@
 import { None, Option, Some } from "ts-results-es";
-import Bvid from "./bv.js";
+import Bvid from "../bv.js";
 import { XMLParser } from "fast-xml-parser";
 export class BiliArchiver {
   endpoint: URL;

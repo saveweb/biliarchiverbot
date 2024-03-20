@@ -1,6 +1,6 @@
 import { Bot, webhookCallback } from "grammy";
 import { BiliArchiver } from "./api.js";
-import Bvid from "./bv.js";
+import Bvid from "../bv.js";
 import resolveB23 from "./b23.js";
 import * as MARKUP from "./markup.js";
 import { env } from "$env/dynamic/private";

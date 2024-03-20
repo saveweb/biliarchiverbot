@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { Config } from "@sveltejs/kit";
-  import type { PageData } from "./$types";
-  import Bvid from "$lib/bv";
   import { List } from "svelte-virtual";
+  import type { PageData } from "./$types.js";
+  import Bvid from "$lib/bv.js";
   export let data: PageData;
   export const config: Config = {
     runtime: "edge",
