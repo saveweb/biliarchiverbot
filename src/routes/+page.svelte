@@ -2,6 +2,7 @@
   import type { Config } from "@sveltejs/kit";
   import type { PageData } from "./$types";
   import Bvid from "$lib/bv";
+  import { List } from "svelte-virtual";
   export let data: PageData;
   export const config: Config = {
     runtime: "edge",
@@ -25,26 +26,41 @@
     }) || [];
 </script>
 
+<svelte:head>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</svelte:head>
 <main>
-  <h2>Biliarchiver Bot Status</h2>
-  <p id="general">Running: {data?.archived?.success || "down"}</p>
-  <h2>Archived recently</h2>
+  <nav>
+    <h2>Biliarchiver Bot (<a href="/debug">{data?.archived?.success ? "Running" : "Down"}</a>)</h2>
+  </nav>
   <ul>
-    {#each items as item}
-      <li>
+    <List
+      height="calc(100vh - 90px)"
+      width="100vw"
+      itemCount={items.length}
+      itemSize={320}
+    >
+      <li
+        slot="item"
+        let:index
+        let:style
+        style={style.replace("width: 100%;", "width: 90%;")}
+      >
         <div class="info">
           <h3>
-            <a class="bvid" href="https://www.bilibili.com/video/{item.bvid}"
-              >{item.bvid}</a
+            <a
+              class="bvid"
+              href="https://www.bilibili.com/video/{items[index].bvid}"
+              >{items[index].bvid}</a
             >
           </h3>
-          <time class="hint">{timestamp2time(item.added_time)}</time>
-          <storng>{item.status}</storng>
-          <span>{item.status === "finished" ? "✅" : "❌"}</span>
+          <time class="hint">{timestamp2time(items[index].added_time)}</time>
+          <storng>{items[index].status}</storng>
+          <span>{items[index].status === "finished" ? "✅" : "❌"}</span>
         </div>
         <div class="cover">
-          <a href={item.link}>
-            <img src={item.cover} alt="cover" loading="lazy" />
+          <a href={items[index].link}>
+            <img src={items[index].cover} alt="cover" loading="lazy" />
             <img
               class="hover-icon"
               src="ia-logo.svg"
@@ -54,13 +70,13 @@
           </a>
         </div>
       </li>
-    {/each}
+    </List>
   </ul>
 </main>
 
 <style>
   main {
-    margin: 2em 0;
+    margin: 0;
     border-radius: 4px;
     /* background-color: var(--tg-theme-bg-color); */
     color: var(--tg-theme-text-color);
@@ -72,17 +88,15 @@
   time {
     font-family: "IBM Plex Mono", "Noto Sans Mono", Consolas, monospace;
   }
-  #general {
-    font-size: 20px;
-    margin: 12px 20px;
-  }
   ul {
     list-style: none;
     padding: 0;
+    margin: 0 auto;
   }
   li {
     margin: 1em 8px;
     border-radius: 8px;
+    height: 320px;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -91,6 +105,10 @@
   }
   li:nth-child(odd) {
     background-color: var(--tg-theme-secondary-bg-color);
+  }
+  nav {
+    position: sticky;
+    height: 70px;
   }
   h3 {
     margin: 4px;
@@ -119,6 +137,11 @@
   .cover a {
     position: relative;
     user-select: none;
+  }
+  a {
+    text-decoration: none;
+    color: var(--tg-theme-text-color);
+    cursor: initial;
   }
   .hover-icon {
     user-select: none;
@@ -154,5 +177,9 @@
   }
   a.bvid:active {
     filter: brightness(0.9);
+  }
+
+  * {
+    overflow: hidden !important;
   }
 </style>

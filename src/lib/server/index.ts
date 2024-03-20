@@ -1,29 +1,33 @@
-import { Telegraf } from "telegraf";
-import { BiliArchiver } from "./api";
-import Bvid from "./bv";
-import resolveB23 from "./b23";
-import * as MARKUP from "./markup";
-require('dotenv').config()
+import { Bot, webhookCallback } from "grammy";
+import { BiliArchiver } from "./api.js";
+import Bvid from "./bv.js";
+import resolveB23 from "./b23.js";
+import * as MARKUP from "./markup.js";
+import { env } from "$env/dynamic/private";
 
-const token = process.env.BILIARCHIVER_BOT;
+const token = env.BILIARCHIVER_BOT;
 if (!token) {
   console.error("\x1b[31mBOT_TOKEN must be provided!\x1b[0m");
-  process.exit(1);
 }
-const bot = new Telegraf(token);
-const apiBase = process.env.BILIARCHIVER_API;
+const bot = new Bot(token!);
+const apiBase = env.BILIARCHIVER_API;
 if (!apiBase) {
   throw new Error("\x1b[31mBILIARCHIVER_API must be provided!\x1b[0m");
 }
 const api = new BiliArchiver(new URL(apiBase));
 
-bot.command("start", Telegraf.reply("向我发送 BV 号以存档视频。"));
-bot.help((ctx) => ctx.reply("向我发送 BV 号以存档视频。我会进行正则匹配。"));
+bot.command("start", (ctx) => ctx.reply("向我发送 BV 号以存档视频。"));
+bot.command("help", (ctx) =>
+  ctx.reply("向我发送 BV 号以存档视频。我会进行正则匹配。")
+);
 
 bot.command("bili", async (ctx) => {
   // if (ctx.chat.id !== -1001773704746) {
   //   return;
   // }
+  if (!ctx.message) {
+    return;
+  }
   let text = ctx.message.text;
   // @ts-ignore
   console.info(ctx.message.reply_to_message);
@@ -96,7 +100,7 @@ ${url}`,
   })();
   (async () => {
     try {
-      ctx.deleteMessage(pending.message_id);
+      ctx.deleteMessages([pending.message_id]);
       if (success) {
         await ctx.reply(`Archive request ${bv} was successfully sent.`, {
           reply_to_message_id: ctx.message.message_id,
@@ -122,15 +126,11 @@ ${queue.join("\n")}`
     : "**All items in queue has been archived**";
   const reply_markup =
     ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
-  await ctx.replyWithMarkdownV2(text, {
-    reply_to_message_id: ctx.message.message_id,
+  await ctx.reply(text, {
+    // reply_parameters: ctx.message.message_id,
+    parse_mode: "MarkdownV2",
     reply_markup,
   });
 });
 
-console.log("Start running…");
-bot.launch();
-
-// Enable graceful stop
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+export default bot;
