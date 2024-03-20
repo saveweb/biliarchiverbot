@@ -122,7 +122,9 @@ bot.command("bilist", async (ctx) => {
   const queue = await api.queue();
   const text = queue.length
     ? `**${queue.length} items in queue pending or archiving:**
-${queue.join("\n")}`
+${queue.splice(40).join("\n")}
+${queue.length > 40 ? "\n... and " + (queue.length - 40) + " more" : ""}
+`
     : "**All items in queue has been archived**";
   const reply_markup =
     ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
