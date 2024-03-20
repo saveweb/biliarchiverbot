@@ -2,6 +2,7 @@
   import type { Config } from "@sveltejs/kit";
   import type { PageData } from "./$types";
   import Bvid from "$lib/bv";
+  import { List } from "svelte-virtual";
   export let data: PageData;
   export const config: Config = {
     runtime: "edge",
@@ -30,21 +31,23 @@
   <p id="general">Running: {data?.archived?.success || "down"}</p>
   <h2>Archived recently</h2>
   <ul>
-    {#each items as item}
-      <li>
+    <List height={650} width="100vw" itemCount={items.length} itemSize={320}>
+      <li slot="item" let:index let:style {style}>
         <div class="info">
           <h3>
-            <a class="bvid" href="https://www.bilibili.com/video/{item.bvid}"
-              >{item.bvid}</a
+            <a
+              class="bvid"
+              href="https://www.bilibili.com/video/{items[index].bvid}"
+              >{items[index].bvid}</a
             >
           </h3>
-          <time class="hint">{timestamp2time(item.added_time)}</time>
-          <storng>{item.status}</storng>
-          <span>{item.status === "finished" ? "✅" : "❌"}</span>
+          <time class="hint">{timestamp2time(items[index].added_time)}</time>
+          <storng>{items[index].status}</storng>
+          <span>{items[index].status === "finished" ? "✅" : "❌"}</span>
         </div>
         <div class="cover">
-          <a href={item.link}>
-            <img src={item.cover} alt="cover" loading="lazy" />
+          <a href={items[index].link}>
+            <img src={items[index].cover} alt="cover" loading="lazy" />
             <img
               class="hover-icon"
               src="ia-logo.svg"
@@ -54,7 +57,7 @@
           </a>
         </div>
       </li>
-    {/each}
+    </List>
   </ul>
 </main>
 
@@ -83,6 +86,7 @@
   li {
     margin: 1em 8px;
     border-radius: 8px;
+    height: 320px;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -98,6 +102,7 @@
   .info {
     font-size: 20px;
     margin: 12px 0;
+    width: calc(100vw - 40px);
   }
   img[alt="cover"] {
     width: 320px;
@@ -154,5 +159,9 @@
   }
   a.bvid:active {
     filter: brightness(0.9);
+  }
+
+  * {
+    overflow: hidden!important;
   }
 </style>

@@ -1,4 +1,3 @@
-import { error } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { webhookCallback } from "grammy";
 import bot from "$lib/server/index.js";

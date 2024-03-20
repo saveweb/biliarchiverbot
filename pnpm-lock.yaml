@@ -34,6 +34,9 @@ devDependencies:
   svelte-check:
     specifier: ^3.6.8
     version: 3.6.8(svelte@4.2.12)
+  svelte-virtual:
+    specifier: 1.0.0-next.17
+    version: 1.0.0-next.17(svelte@4.2.12)
   ts-node:
     specifier: ^10.9.2
     version: 10.9.2(@types/node@20.11.30)(typescript@5.4.2)
@@ -1228,6 +1231,16 @@ packages:
       strip-indent: 3.0.0
       svelte: 4.2.12
       typescript: 5.4.2
+    dev: true
+
+  /svelte-virtual@1.0.0-next.17(svelte@4.2.12):
+    resolution: {integrity: sha512-fXfeNQYQcYZrfillAh+F6K45uX6vA8E2kfMPfBruyIXqmjVJH56W3I1OiVO/PNX0eoUMUp+I5QFeKsWKsa4XmA==}
+    engines: {pnpm: '>=7'}
+    requiresBuild: true
+    peerDependencies:
+      svelte: ^3.54.0 || ^4.0.0
+    dependencies:
+      svelte: 4.2.12
     dev: true
 
   /svelte@4.2.12:
