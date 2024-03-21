@@ -121,11 +121,10 @@ ${url}`,
 bot.command("bilist", async (ctx) => {
   const queue = await api.queue();
   const text = queue.length
-    ? `**${queue.length} items in queue pending or archiving:**
-${queue.splice(40).join("\n")}
-${queue.length > 40 ? "\n... and " + (queue.length - 40) + " more" : ""}
-`
-    : "**All items in queue has been archived**";
+    ? `**${queue.length} items in queue pending or archiving:**\n${
+        queue.length > 10 ? queue.slice(0, 10).join("\n") + "\nAnd " + (queue.length - 10) + " more" : queue.join("\n")
+      }`
+    : "**All items in queue have been archived**";
   const reply_markup =
     ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
   await ctx.reply(text, {
