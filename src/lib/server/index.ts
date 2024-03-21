@@ -16,9 +16,23 @@ if (!apiBase) {
 }
 const api = new BiliArchiver(new URL(apiBase));
 
-bot.command("start", (ctx) => ctx.reply("向我发送 BV 号以存档视频。"));
+bot.command("start", (ctx) =>
+  ctx.reply(
+    "向我发送 <code>/bili</code> 命令并跟随视频链接，我会进行正则匹配。\n" +
+      "查询存档队列请使用 <code>/bilist</code> 命令。\n",
+    {
+      parse_mode: "HTML",
+    }
+  )
+);
 bot.command("help", (ctx) =>
-  ctx.reply("向我发送 BV 号以存档视频。我会进行正则匹配。")
+  ctx.reply(
+    "向我发送 <code>/bili</code> 命令并跟随视频链接，我会进行正则匹配。\n" +
+      "查询存档队列请使用 <code>/bilist</code> 命令。\n",
+    {
+      parse_mode: "HTML",
+    }
+  )
 );
 
 bot.command("bili", async (ctx) => {
