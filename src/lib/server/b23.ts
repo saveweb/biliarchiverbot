@@ -1,3 +1,5 @@
+import { av2bv } from './av2bv.js';
+
 const fetchRedirectUrl = async (url: URL | string): Promise<URL | null> => {
     try {
         const response = await fetch(url, { redirect: 'follow' });
@@ -18,6 +20,14 @@ const resolveB23 = async (str: string): Promise<string> => {
     const urlRegex = /https?:\/\/b23\.(tv|wtf)\/\S+/g;
     let match: RegExpExecArray | null;
     let updatedString = str;
+
+    const avRegex = /\/av(\d+)/g;
+    if ((match = avRegex.exec(str)) !== null) {
+        let av = match[1];
+        const bv = av2bv(match[1]); 
+        console.info("av" + av + " -> " + bv);
+        updatedString = updatedString.replace("av" + av, bv);
+    }
 
     while ((match = urlRegex.exec(str)) !== null) {
         const originalUrl = match[0];
