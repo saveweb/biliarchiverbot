@@ -35,31 +35,7 @@ bot.command("help", (ctx) =>
   )
 );
 
-bot.command("bili", async (ctx) => {
-  // if (ctx.chat.id !== -1001773704746) {
-  //   return;
-  // }
-  if (!ctx.message) {
-    return;
-  }
-  let text = ctx.message.text;
-  // @ts-ignore
-  console.info(ctx.message.reply_to_message);
-  // @ts-ignore
-  if (ctx.message.reply_to_message && ctx.message.reply_to_message["text"]) {
-    // @ts-ignore
-    text = ctx.message.reply_to_message["text"] + "\n" + text;
-  }
-  // console.log(ctx.message);
-  const urls: string[] = [];
-
-  ctx.message.entities?.forEach((entity) => {
-    if (entity.type === "text_link" && entity.url) {
-      urls.push(entity.url);
-    }
-  });
-
-  text = urls.join(" ") + text;
+const handleBiliLink = async (ctx, text) => {
   text = await resolveB23(text);
   const matches = /BV[a-zA-Z0-9]+/i.exec(text);
   if (!matches) {
@@ -91,8 +67,7 @@ bot.command("bili", async (ctx) => {
         try {
           const url = result.unwrap().toString();
           await ctx.reply(
-            `\u{1F389} Archive of ${bv} was done, item uploaded to
-${url}`,
+            `\u{1F389} Archive of ${bv} was done, item uploaded to\n${url}`,
             {
               reply_to_message_id: ctx.message.message_id,
               reply_markup: {
@@ -130,6 +105,36 @@ ${url}`,
       return;
     }
   })();
+};
+
+bot.command("bili", async (ctx) => {
+  // if (ctx.chat.id !== -1001773704746) {
+  //   return;
+  // }
+  if (!ctx.message) {
+    return;
+  }
+  let text = ctx.message.text;
+  // @ts-ignore
+  console.info(ctx.message.reply_to_message);
+  // @ts-ignore
+  if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
+    // @ts-ignore
+    text = ctx.message.reply_to_message.text + "\n" + text;
+  }
+  // console.log(ctx.message);
+  await handleBiliLink(ctx, text);
+});
+
+bot.hears(/https:\/\/b23.tv\/\S+|https:\/\/www.bilibili.com\/video\/\S+/i, async (ctx) => {
+  if (!ctx.message) {
+    return;
+  }
+  let text = ctx.message.text;
+  if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
+    text = ctx.message.reply_to_message.text + "\n" + text;
+  }
+  await handleBiliLink(ctx, text);
 });
 
 bot.command("bilist", async (ctx) => {
