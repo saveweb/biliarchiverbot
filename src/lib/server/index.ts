@@ -125,8 +125,7 @@ bot.command("bili", async (ctx) => {
   // console.log(ctx.message);
   await handleBiliLink(ctx, text);
 });
-
-bot.hears(/https:\/\/b23.tv\/\S+|https:\/\/www.bilibili.com\/video\/\S+/i, async (ctx) => {
+bot.hears(/(BV[a-zA-Z0-9]+)|(av\d+)|https:\/\/b23.tv\/\S+|https:\/\/www.bilibili.com\/video\/\S+/i, async (ctx) => {
   if (!ctx.message) {
     return;
   }
