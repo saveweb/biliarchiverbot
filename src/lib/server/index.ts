@@ -1,15 +1,17 @@
-import { Bot, webhookCallback } from "grammy";
+import { Bot, webhookCallback, Context } from "grammy";
 import { BiliArchiver } from "./api.js";
 import Bvid from "../bv.js";
 import resolveB23 from "./b23.js";
 import * as MARKUP from "./markup.js";
 import { env } from "$env/dynamic/private";
+import { autoQuote } from "@roziscoding/grammy-autoquote";
 
 const token = env.BILIARCHIVER_BOT;
 if (!token) {
   console.error("\x1b[31mBOT_TOKEN must be provided!\x1b[0m");
 }
 const bot = new Bot(token!);
+bot.use(autoQuote());
 const apiBase = env.BILIARCHIVER_API;
 if (!apiBase) {
   throw new Error("\x1b[31mBILIARCHIVER_API must be provided!\x1b[0m");
@@ -35,7 +37,21 @@ bot.command("help", (ctx) =>
   )
 );
 
-const handleBiliLink = async (ctx, text) => {
+const handleBiliLink = async (ctx: Context) => {
+  if (!ctx.message) {
+    return;
+  }
+  if (!ctx.message.text) {
+    return;
+  }
+  if (!ctx.chat)  {
+    return;
+  }
+  let text = ctx.message.text;
+  console.info(ctx.message.reply_to_message);
+  if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
+    text = ctx.message.reply_to_message.text + "\n" + text;
+  }
   text = await resolveB23(text);
   const matches = /BV[a-zA-Z0-9]+/i.exec(text);
   if (!matches) {
@@ -69,7 +85,6 @@ const handleBiliLink = async (ctx, text) => {
           await ctx.reply(
             `\u{1F389} Archive of ${bv} was done, item uploaded to\n${url}`,
             {
-              reply_to_message_id: ctx.message.message_id,
               reply_markup: {
                 inline_keyboard: [
                   [
@@ -92,12 +107,10 @@ const handleBiliLink = async (ctx, text) => {
       ctx.deleteMessages([pending.message_id]);
       if (success) {
         await ctx.reply(`Archive request ${bv} was successfully sent.`, {
-          reply_to_message_id: ctx.message.message_id,
           reply_markup,
         });
       } else {
         await ctx.reply(`Archive request ${bv} failed.`, {
-          reply_to_message_id: ctx.message.message_id,
           reply_markup,
         });
       }
@@ -108,32 +121,10 @@ const handleBiliLink = async (ctx, text) => {
 };
 
 bot.command("bili", async (ctx) => {
-  // if (ctx.chat.id !== -1001773704746) {
-  //   return;
-  // }
-  if (!ctx.message) {
-    return;
-  }
-  let text = ctx.message.text;
-  // @ts-ignore
-  console.info(ctx.message.reply_to_message);
-  // @ts-ignore
-  if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
-    // @ts-ignore
-    text = ctx.message.reply_to_message.text + "\n" + text;
-  }
-  // console.log(ctx.message);
-  await handleBiliLink(ctx, text);
+  await handleBiliLink(ctx);
 });
 bot.hears(/(BV[a-zA-Z0-9]+)|(av\d+)|https:\/\/b23\.tv\/\S+|https:\/\/www\.bilibili\.com\/video\/\S+/i, async (ctx) => {
-  if (!ctx.message) {
-    return;
-  }
-  let text = ctx.message.text;
-  if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
-    text = ctx.message.reply_to_message.text + "\n" + text;
-  }
-  await handleBiliLink(ctx, text);
+  await handleBiliLink(ctx);
 });
 
 bot.command("bilist", async (ctx) => {

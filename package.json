@@ -11,6 +11,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@roziscoding/grammy-autoquote": "^2.0.6",
 		"fast-xml-parser": "^4.3.6",
 		"grammy": "^1.21.1",
 		"ts-results-es": "4.1.0"
