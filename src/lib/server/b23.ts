@@ -27,6 +27,7 @@ const resolveB23 = async (str: string): Promise<string> => {
         const bv = av2bv(match[1]); 
         console.info("av" + av + " -> " + bv);
         updatedString = updatedString.replace("av" + av, bv);
+        console.info("Replaced av" + av + " with " + bv);
     }
 
     while ((match = urlRegex.exec(str)) !== null) {

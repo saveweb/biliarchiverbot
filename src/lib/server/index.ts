@@ -48,7 +48,6 @@ const handleBiliLink = async (ctx: Context) => {
     return;
   }
   let text = ctx.message.text;
-  console.info(ctx.message.reply_to_message);
   if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
     text = ctx.message.reply_to_message.text + "\n" + text;
   }
