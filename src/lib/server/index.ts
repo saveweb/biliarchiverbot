@@ -1,4 +1,4 @@
-import { Bot, webhookCallback, Context } from "grammy";
+import { Bot, webhookCallback, Context, GrammyError, HttpError } from "grammy";
 import { BiliArchiver } from "./api.js";
 import Bvid from "../bv.js";
 import resolveB23 from "./b23.js";
@@ -141,6 +141,19 @@ bot.command("bilist", async (ctx) => {
     parse_mode: "MarkdownV2",
     reply_markup,
   });
+});
+
+bot.catch((err) => {
+  const ctx = err.ctx;
+  console.error(`Error while handling update ${ctx.update.update_id}:`);
+  const e = err.error;
+  if (e instanceof GrammyError) {
+    console.error("Error in request:", e.description);
+  } else if (e instanceof HttpError) {
+    console.error("Could not contact Telegram:", e);
+  } else {
+    console.error("Unknown error:", e);
+  }
 });
 
 export default bot;
