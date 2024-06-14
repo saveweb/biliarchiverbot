@@ -20,8 +20,9 @@ const resolveB23 = async (str: string): Promise<string> => {
     const urlRegex = /https?:\/\/b23\.(tv|wtf)\/\S+/g;
     let match: RegExpExecArray | null;
     let updatedString = str;
+    console.info("Resolving B23 links in: ", str);
 
-    const avRegex = /\/av(\d+)/g;
+    const avRegex = /av(\d+)/g;
     if ((match = avRegex.exec(str)) !== null) {
         let av = match[1];
         const bv = av2bv(match[1]); 

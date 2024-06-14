@@ -52,10 +52,12 @@ const handleBiliLink = async (ctx: Context) => {
     text = ctx.message.reply_to_message.text + "\n" + text;
   }
   text = await resolveB23(text);
-  const matches = /BV[a-zA-Z0-9]+/i.exec(text);
+  console.info("Resolved", text);
+  const matches = /BV[a-zA-Z0-9]+/.exec(text);
   if (!matches) {
     return;
   }
+  console.info("Regex matches", matches[0]);
   const bv = new Bvid(matches[0]);
   console.log("Found", ctx.chat.id, ctx.message.text);
   let pending;
