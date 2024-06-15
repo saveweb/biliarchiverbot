@@ -83,4 +83,24 @@ export class BiliArchiver {
       return None
     }
   }
+
+  async add_from_source(source_type: string, source_id: string): Promise<Array<string>> {
+    const url = new URL(`/archive/${source_type}/${source_id}`, this.endpoint);
+    console.info(`POST ${url.toString()}`);
+    try {
+      const res = await fetch(url.toString(), {
+        method: "POST",
+      });
+      const data = await res.json();
+      console.info(data);
+      if (data?.success) {
+        return data?.bvids || [];
+      } else {
+        return [];
+      }
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  }
 }
