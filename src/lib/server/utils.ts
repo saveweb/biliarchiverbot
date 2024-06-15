@@ -29,6 +29,13 @@ const handleBiliLink = async (ctx: Context) => {
   console.info("Resolved", text);
   const matches = /BV[a-zA-Z0-9]+/.exec(text);
   if (!matches) {
+    const listmatches = /\/(play|list)\/ml(\d+)|\/favlist\?fid=(\d+)/.exec(text);
+    if (listmatches) {
+      console.info("List matches", listmatches[2] || listmatches[3]);
+      handle_source(ctx, "favlist", listmatches[2] || listmatches[3]);
+      return;
+    }
+
     const uidmatches = /space\.bilibili\.com\/(\d+)/.exec(text);
     if (uidmatches) {
       console.info("UID matches", uidmatches[1]);
@@ -113,7 +120,7 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   }
   let pending;
   try {
-    pending = await ctx.reply("正在发送请求……", {
+    pending = await ctx.reply("Getting items from source……", {
       reply_to_message_id: ctx.message.message_id,
     });
   } catch (e) {
@@ -121,12 +128,47 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   }
   const bvids = await api.add_from_source(source_type, source_id);
 
+  const reply_markup =
+    ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
+  (async () => {
+    try {
+      ctx.deleteMessages([pending.message_id]);
+      if (bvids.length) {
+        pending = await ctx.reply(
+          `Got ${bvids.length} items from source ${source_type} ${source_id}.\nSending archive requests……`,
+          {
+            reply_markup,
+          }
+        );
+      } else {
+        await ctx.reply(`Archive request failed.`, {
+          reply_markup,
+        });
+        return;
+      }
+    } catch (e) {
+      return;
+    }
+  })();
+
   for (let bvid of bvids) {
     await api.add(new Bvid(bvid));
   }
 
-  const reply_markup =
-    ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
+  (async () => {
+    try {
+      ctx.deleteMessages([pending.message_id]);
+    } catch (e) {
+      return;
+    } finally {
+      if (bvids.length) {
+        await ctx.reply(`All ${bvids.length} items from source ${source_type} ${source_id} were successfully sent.`, {
+          reply_markup,
+        });
+      }
+    }
+  })();
+
   (async () => {
     const sleep = (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
@@ -156,25 +198,6 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
           return;
         }
       }
-    }
-  })();
-  (async () => {
-    try {
-      ctx.deleteMessages([pending.message_id]);
-      if (bvids.length) {
-        await ctx.reply(
-          `Archive request of ${bvids.length} items was successfully sent.`,
-          {
-            reply_markup,
-          }
-        );
-      } else {
-        await ctx.reply(`Archive request failed.`, {
-          reply_markup,
-        });
-      }
-    } catch (e) {
-      return;
     }
   })();
 };
