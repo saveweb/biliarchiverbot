@@ -85,7 +85,7 @@ export class BiliArchiver {
   }
 
   async add_from_source(source_type: string, source_id: string): Promise<Array<string>> {
-    const url = new URL(`/archive/${source_type}/${source_id}`, this.endpoint);
+    const url = new URL(`/get_bvids_by/${source_type}/${source_id}`, this.endpoint);
     console.info(`POST ${url.toString()}`);
     try {
       const res = await fetch(url.toString(), {
