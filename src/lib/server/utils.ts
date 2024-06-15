@@ -29,11 +29,10 @@ const handleBiliLink = async (ctx: Context) => {
   console.info("Resolved", text);
   const matches = /BV[a-zA-Z0-9]+/.exec(text);
   if (!matches) {
-    // user space
     const uidmatches = /space\.bilibili\.com\/(\d+)/.exec(text);
     if (uidmatches) {
       console.info("UID matches", uidmatches[1]);
-      handle_source(ctx, "user", uidmatches[1]);
+      handle_source(ctx, "up_videos", uidmatches[1]);
       return;
     }
     return;
@@ -121,6 +120,11 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
     return;
   }
   const bvids = await api.add_from_source(source_type, source_id);
+
+  for (let bvid of bvids) {
+    await api.add(new Bvid(bvid));
+  }
+
   const reply_markup =
     ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
   (async () => {
