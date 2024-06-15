@@ -17,7 +17,7 @@ const fetchRedirectUrl = async (url: URL | string): Promise<URL | null> => {
 };
 
 const resolveB23 = async (str: string): Promise<string> => {
-    const urlRegex = /https?:\/\/b23\.(tv|wtf)\/\S+/g;
+    const urlRegex = /b23\.(tv|wtf)\/\S+/g;
     let match: RegExpExecArray | null;
     let updatedString = str;
     console.info("Resolving B23 links in: ", str);
@@ -32,10 +32,10 @@ const resolveB23 = async (str: string): Promise<string> => {
     }
 
     while ((match = urlRegex.exec(str)) !== null) {
-        const originalUrl = match[0];
+        const originalUrl = "https://" + match[0];
         const redirectedUrl = await fetchRedirectUrl(originalUrl);
         if (redirectedUrl)
-            updatedString = updatedString.replace(originalUrl, redirectedUrl.toString());
+            updatedString = redirectedUrl.toString();
     }
 
     return updatedString;

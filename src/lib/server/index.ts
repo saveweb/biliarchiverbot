@@ -124,7 +124,7 @@ const handleBiliLink = async (ctx: Context) => {
 bot.command("bili", async (ctx) => {
   await handleBiliLink(ctx);
 });
-bot.hears(/(BV[a-zA-Z0-9]+)|(av\d+)|https:\/\/b23\.tv\/\S+|https:\/\/www\.bilibili\.com\/video\/\S+/i, async (ctx) => {
+bot.hears(/(BV[a-zA-Z0-9]+)|(av\d+)|b23\.(tv|wtf)\/\S+|www\.bilibili\.com\/video\/\S+/i, async (ctx) => {
   await handleBiliLink(ctx);
 });
 
