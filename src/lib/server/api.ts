@@ -96,6 +96,7 @@ export class BiliArchiver {
       if (data?.success) {
         return data?.bvids || [];
       } else {
+        console.error(data);
         return [];
       }
     } catch (e) {
