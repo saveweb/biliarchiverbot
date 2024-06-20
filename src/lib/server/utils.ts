@@ -210,13 +210,16 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       const result = await api.check(new Bvid(bvid));
       if (result.isSome()) {
         newlyCompleted.push(bvid);
-        console.debug(`Archive of ${bvid} was done, item uploaded to\n${result.unwrap().toString()}`);
+        console.debug(`${i}/${remainingBvids.length}|Archive of ${bvid} was done, item uploaded to\n${result.unwrap().toString()}`);
       }
       await sleep(2000);
     }
     remainingBvids = remainingBvids.filter(bvid => !newlyCompleted.includes(bvid));
     completedBvids.push(...newlyCompleted);
-    if (newlyCompleted.length > 20) {
+    if (remainingBvids.length === 0) {
+      await ctx.reply(`All items have been processed.`);
+      return;
+    } else if (newlyCompleted.length > 20) {
       await ctx.reply(`Archives completed for ${newlyCompleted.length} BVIDs. \nRemaining: ${remainingBvids.length} items.`, {
         reply_markup,
       });
@@ -225,6 +228,9 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
         reply_markup,
       });
     }
+
+    checked_turns++;
+
     if (remainingBvids.length > 0 && checked_turns < 30) {
       setTimeout(checkArchives, 60000);
     } else if (remainingBvids.length = 0) {
