@@ -190,44 +190,55 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       return;
     } finally {
       if (bvids.length) {
-        await ctx.reply(`All ${bvids.length} items from source ${source_type} ${source_id} were successfully sent.`, {
+        await ctx.reply(`All ${bvids.length} tasks from source ${source_type} ${source_id} were successfully sent. Now checking archives.`, {
           reply_markup,
         });
       }
     }
   })();
 
-  (async () => {
+  let remainingBvids = bvids.slice();
+  let completedBvids = [];
+  let checked_turns = 0;
+
+  const checkArchives = async () => {
     const sleep = (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
-    for (let i = 0; i < 30; i++) {
-      await sleep(28000 + 4500 * i);
-      for (let bvid of bvids) {
-        const result = await api.check(new Bvid(bvid));
-        if (result.isSome()) {
-          try {
-            const url = result.unwrap().toString();
-            await ctx.reply(
-              `\u{1F389} Archive of ${bvid} was done, item uploaded to\n${url}`,
-              {
-                reply_markup: {
-                  inline_keyboard: [
-                    [
-                      {
-                        text: "View archived",
-                        url,
-                      },
-                    ],
-                  ],
-                },
-              }
-            );
-          } catch (e) {}
-          return;
-        }
+    let newlyCompleted = [];
+    for (let i = 0; i < remainingBvids.length; i++) {
+      const bvid = remainingBvids[i];
+      const result = await api.check(new Bvid(bvid));
+      if (result.isSome()) {
+        newlyCompleted.push(bvid);
+        console.debug(`Archive of ${bvid} was done, item uploaded to\n${result.unwrap().toString()}`);
       }
+      await sleep(2000);
     }
-  })();
+    remainingBvids = remainingBvids.filter(bvid => !newlyCompleted.includes(bvid));
+    completedBvids.push(...newlyCompleted);
+    if (newlyCompleted.length > 20) {
+      await ctx.reply(`Archives completed for ${newlyCompleted.length} BVIDs. \nRemaining: ${remainingBvids.length} items.`, {
+        reply_markup,
+      });
+    } else if (newlyCompleted.length > 0) {
+      await ctx.reply(`Archives completed for BVIDs: \n${newlyCompleted.join(', ')}.\nRemaining: ${remainingBvids.length} items.`, {
+        reply_markup,
+      });
+    }
+    if (remainingBvids.length > 0 && checked_turns < 30) {
+      setTimeout(checkArchives, 60000);
+    } else if (remainingBvids.length = 0) {
+      await ctx.reply(`All items have been processed.`, {
+        reply_markup,
+      });
+    } else {
+      await ctx.reply(`Some items have not been processed yet after half an hour, they are: \n${remainingBvids.join(', ')}.`, {
+        reply_markup,
+      });
+    }
+  };
+
+  checkArchives();
 };
 
 export { handleBiliLink };
