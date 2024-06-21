@@ -17,5 +17,4 @@ COPY --from=prod-deps /app/node_modules /app/node_modules
 COPY --from=build /app/.svelte-kit/output /app/.svelte-kit/output
 EXPOSE 5173
 
-# pnpm dev --host
-CMD ["pnpm", "vite", "preview", "--host", "--port", "5173"]
+CMD ["pnpm", "dev", "--host", "--port", "5173"]
