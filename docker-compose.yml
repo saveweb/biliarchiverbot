@@ -1,0 +1,13 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      BILIARCHIVER_WEBAPP: ${BILIARCHIVER_WEBAPP}
+      BILIARCHIVER_USERNAME: ${BILIARCHIVER_USERNAME}
+      BILIARCHIVER_API: ${BILIARCHIVER_API}
+      BILIARCHIVER_BOT: ${BILIARCHIVER_BOT}
+    ports:
+      - "5173:5173"
