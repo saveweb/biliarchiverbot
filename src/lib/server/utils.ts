@@ -146,59 +146,107 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   if (!ctx.chat) {
     return;
   }
-  let pending;
-  try {
-    pending = await ctx.reply(`Getting items from source ${source_type} ${source_id}……`, {
-      reply_to_message_id: ctx.message.message_id,
-    });
-  } catch (e) {
-    return;
-  }
-  const bvids = await api.add_from_source(source_type, source_id);
+
+  const chat_id = ctx.chat.id;
+  const chat_type = ctx.chat.type;
 
   const reply_markup =
     ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
-  (async () => {
-    try {
-      ctx.deleteMessages([pending.message_id]);
-      if (bvids.length) {
-        pending = await ctx.reply(
-          `Got ${bvids.length} items from source ${source_type} ${source_id}.\nSending archive requests……`,
-          {
-            reply_markup,
-          }
-        );
-      } else {
-        await ctx.reply(`Archive request failed for source ${source_type} ${source_id}.`, {
-          reply_markup,
-        });
-        return;
-      }
-    } catch (e) {
-      return;
-    }
-  })();
 
-  for (let bvid of bvids) {
-    await api.add(new Bvid(bvid));
+  let statusMessage = await ctx.reply(
+    `Getting items from source ${source_type} ${source_id}...`,
+  );
+
+  const bvids = await api.add_from_source(source_type, source_id);
+
+  const processSource = async () => {
+    let existingCount = 0;
+    let newCount = 0;
+    let processedCount = 0;
+    let newBvids: string[] = [];
+    let lastMessageText = '';
+    let lastOptions: any = {};
+    
+    const updateStatus = async () => {
+      try {
+        const messageText = `Processing source ${source_type} ${source_id}:\n` +
+          `Total: ${bvids.length}\n` +
+          `${existingCount > 0 ? `Existing: ${existingCount}\n` : ''}` +
+          `${newCount > 0 ? `New: ${newCount}\n` : ''}` +
+          `${processedCount > 0 ? `Processed: ${processedCount}\n` : ''}`;
+  
+        const options: any = {};
+        if (newCount > 0) {
+          options.reply_markup = reply_markup;
+        }
+
+        if (messageText === lastMessageText && JSON.stringify(options) === JSON.stringify(lastOptions)) {
+          return; // 如果消息没有变化，直接返回
+        }
+
+        await ctx.api.editMessageText(
+          chat_id,
+          statusMessage.message_id,
+          messageText,
+          options
+        );
+
+        lastMessageText = messageText;
+        lastOptions = options;
+      } catch (e) {
+        console.error("Failed to update status message:", e);
+      }
+    };
+
+    for (const bvid of bvids) {
+      const result = await api.check(new Bvid(bvid));
+      if (result.isSome()) {
+        existingCount++;
+      } else {
+        newCount++;
+        newBvids.push(bvid);
+        await api.add(new Bvid(bvid));
+      }
+      processedCount++;
+
+      if (
+        (chat_type === "private" && processedCount % 1 === 0) ||
+        (chat_type !== "private" && processedCount % 5 === 0) ||
+        processedCount === bvids.length
+      ) {
+        await updateStatus();
+      }
+    }
+
+    await updateStatus();
+    return newBvids;
+  };
+
+  const newBvids = await processSource();
+
+  if (newBvids.length === 0) {
+    await ctx.api.editMessageText(
+      ctx.chat.id,
+      statusMessage.message_id,
+      `Processed all ${bvids.length} items from source ${source_type} ${source_id}.\n` +
+      `${bvids.length} items already existed.\n` +
+      `No new items found.`
+    );
+    return;
   }
 
-  (async () => {
-    try {
-      ctx.deleteMessages([pending.message_id]);
-    } catch (e) {
-      return;
-    } finally {
-      if (bvids.length) {
-        await ctx.reply(`All ${bvids.length} tasks from source ${source_type} ${source_id} were successfully sent. Now checking archives.`, {
-          reply_markup,
-        });
-      }
-    }
-  })();
+  await ctx.api.editMessageText(
+    ctx.chat.id,
+    statusMessage.message_id,
+    `Processed all ${bvids.length} items from source ${source_type} ${source_id}.\n` +
+    `${bvids.length - newBvids.length} items already existed.\n` +
+    `Added ${newBvids.length} new items.\n` +
+    `Now monitoring new archives...`,
+    { reply_markup }
+  );
 
-  let remainingBvids = bvids.slice();
-  let completedBvids = [];
+  let remainingBvids = newBvids.slice();
+  let completedBvids: string[] = [];
   let checked_turns = 0;
 
   const checkArchives = async () => {
