@@ -1,4 +1,4 @@
-FROM node:20-slim AS base
+FROM --platform=$TARGETARCH node:current-slim AS base
 LABEL org.opencontainers.image.source=https://github.com/saveweb/biliarchiverbot
 
 ENV PNPM_HOME="/pnpm"
