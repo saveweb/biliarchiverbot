@@ -29,7 +29,14 @@
 		"ts-results-es": "4.1.0",
 		"tslib": "^2.6.2",
 		"typescript": "^5.4.2",
-		"vite": "^5.2.2",
+		"vite": "^5.2.2"
+	},
+	"optionalDependencies": {
 		"wrangler": "^3.35.0"
+	},
+	"pnpm": {
+		"overrides": {
+			"rollup": "npm:@rollup/wasm-node"
+		}
 	}
 }
