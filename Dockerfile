@@ -4,19 +4,24 @@ LABEL org.opencontainers.image.source=https://github.com/saveweb/biliarchiverbot
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-COPY . /app
 WORKDIR /app
 
-FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+COPY pnpm-lock.yaml ./
+COPY package.json ./
 
-FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+FROM base AS deps
+RUN pnpm fetch
+
+FROM deps AS prod-deps
+RUN pnpm install --prod --offline
+
+FROM deps AS build
+COPY . .
+RUN pnpm install --offline
 RUN pnpm run build
 
 FROM base
 COPY --from=prod-deps /app/node_modules /app/node_modules
 COPY --from=build /app/.svelte-kit/output /app/.svelte-kit/output
 EXPOSE 5173
-
-CMD ["pnpm", "dev", "--host", "--port", "5173"]
+CMD ["pnpm", "vite", "dev", "--host", "--port", "5173"]
