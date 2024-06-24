@@ -1,6 +1,13 @@
 import { None, Option, Some } from "ts-results-es";
 import Bvid from "../bv.js";
 import { XMLParser } from "fast-xml-parser";
+
+interface ArchivedItem {
+  added_time: number; 
+  bvid: string; 
+  status: string; 
+}
+
 export class BiliArchiver {
   endpoint: URL;
 
@@ -32,7 +39,7 @@ export class BiliArchiver {
       const res = await fetch(url.toString());
       const items = (await res.json())?.items;
       // filter those not finished
-      return items.filter((item: any) => item.status !== "finished").map((item: any) => item.bvid);
+      return items.filter((item: ArchivedItem) => item.status !== "finished").map((item: ArchivedItem) => item.bvid);
     } catch (e) {
       console.error(e);
       return [];
