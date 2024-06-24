@@ -21,7 +21,6 @@ ENV BILIARCHIVER_USERNAME=example
 ENV BILIARCHIVER_API=https://example.com/
 ENV BILIARCHIVER_BOT=example
 
-RUN pnpm svelte-kit sync
 RUN pnpm run build
 
 FROM base
