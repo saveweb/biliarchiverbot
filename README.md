@@ -1,6 +1,22 @@
 # biliarchiverbot
 
+## Using Docker
+
+``` shell
+docker run -d \
+  --name biliarchiverbot \
+  -p 5173:5173 \
+  -e BILIARCHIVER_WEBAPP={THE_DEPLOYED_WEBAPP_URL}\
+  -e BILIARCHIVER_USERNAME={THE_TELEGRAM_USERNAME_OF_BILIARCHIVER_BOT}\
+  -e BILIARCHIVER_API={THE_API_URL_OF_BILIARCHIVER}\
+  -e BILIARCHIVER_BOT={YOUR_BOT
+  --restart always \
+  biliarchiverbot
+```
+
 ## Deploy to Vercel
+
+> May have some issues with complicated bot commands, sometimes might not work as expected.
 
 1. fork this repository
 2. open vercel.com and create a new project
