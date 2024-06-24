@@ -292,10 +292,12 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       await ctx.reply(`All items have been processed.`, {
         reply_markup,
       });
+      return;
     } else {
       await ctx.reply(`Some items have not been processed yet after half an hour, they are: \n${remainingBvids.join(', ')}.`, {
         reply_markup,
       });
+      return;
     }
   };
 
