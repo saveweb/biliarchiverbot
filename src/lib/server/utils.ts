@@ -198,20 +198,32 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       }
     };
 
-    for (const bvid of bvids) {
-      const result = await api.check(new Bvid(bvid));
-      if (result.isSome()) {
-        existingCount++;
-      } else {
-        newCount++;
-        newBvids.push(bvid);
-        await api.add(new Bvid(bvid));
-      }
-      processedCount++;
+    const BATCH_SIZE = 10;
+    await updateStatus();
 
+    for (let i = 0; i < bvids.length; i += BATCH_SIZE) {
+      const batch = bvids.slice(i, i + BATCH_SIZE);
+      
+      const results = await Promise.all(
+        batch.map(bvid => api.check(new Bvid(bvid)))
+      );
+  
+      for (let j = 0; j < results.length; j++) {
+        const result = results[j];
+        const bvid = batch[j];
+  
+        if (result.isSome()) {
+          existingCount++;
+        } else {
+          newCount++;
+          newBvids.push(bvid);
+          await api.add(new Bvid(bvid));
+        }
+        processedCount++;
+      }
       if (
         (chat_type === "private" && processedCount % 1 === 0) ||
-        (chat_type !== "private" && processedCount % 5 === 0) ||
+        (chat_type !== "private" && processedCount % 6 === 0) ||
         processedCount === bvids.length
       ) {
         await updateStatus();
