@@ -14,6 +14,19 @@ docker run -d \
   biliarchiverbot
 ```
 
+If you have public IP, you can set the bot's webhook to your IP address.
+
+``` shell
+   https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=<YOUR_IP_ADDRESS>:5173/bot/webhook
+```
+
+If you don't have public IP, you can use [ngrok](https://ngrok.com/) to expose your local server to the internet, or use any other tunneling service. Caddy and Nginx are also good choices.
+
+``` shell
+   https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=<TUNNELING_URL>/bot/webhook
+```
+
+
 ## Deploy to Vercel
 
 > May have some issues with complicated bot commands, sometimes might not work as expected.
