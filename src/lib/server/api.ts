@@ -46,6 +46,18 @@ export class BiliArchiver {
     }
   }
 
+  async getitems(): Promise<Array<ArchivedItem>> {
+    const url = new URL(`/archive`, this.endpoint);
+    try {
+      const res = await fetch(url.toString());
+      const items = (await res.json())?.items;
+      return items;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  }
+
   async check(bv: Bvid): Promise<Option<URL>> {
     try {
       const url = bv.getMetadataUrl()

@@ -262,17 +262,12 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   let checked_turns = 0;
 
   const checkArchives = async () => {
-    const sleep = (ms: number) =>
-      new Promise((resolve) => setTimeout(resolve, ms));
     let newlyCompleted = [];
-    for (let i = 0; i < remainingBvids.length; i++) {
-      const bvid = remainingBvids[i];
-      const result = await api.check(new Bvid(bvid));
-      if (result.isSome()) {
-        newlyCompleted.push(bvid);
-        console.debug(`${i}/${remainingBvids.length}|Archive of ${bvid} was done, item uploaded to\n${result.unwrap().toString()}`);
-      }
-      await sleep(2000);
+    const progress = await api.getitems();
+    let allCompleted = progress.filter(item => item.status === 'finished').map(item => item.bvid);
+    newlyCompleted = allCompleted.filter(bvid => remainingBvids.includes(bvid));
+    if (newlyCompleted.length > 0) {
+      console.debug(`Archive of ${newlyCompleted.length} BVIDs completed: ${newlyCompleted.join(', ')}`);
     }
     remainingBvids = remainingBvids.filter(bvid => !newlyCompleted.includes(bvid));
     completedBvids.push(...newlyCompleted);
