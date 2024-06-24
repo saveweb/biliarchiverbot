@@ -9,9 +9,9 @@ docker run -d \
   -e BILIARCHIVER_WEBAPP={THE_DEPLOYED_WEBAPP_URL}\
   -e BILIARCHIVER_USERNAME={THE_TELEGRAM_USERNAME_OF_BILIARCHIVER_BOT}\
   -e BILIARCHIVER_API={THE_API_URL_OF_BILIARCHIVER}\
-  -e BILIARCHIVER_BOT={YOUR_BOT
+  -e BILIARCHIVER_BOT={YOUR_BOT_TOKEN}\
   --restart always \
-  biliarchiverbot
+  ghcr.io/saveweb/biliarchiverbot:latest
 ```
 
 If you have public IP, you can set the bot's webhook to your IP address.
