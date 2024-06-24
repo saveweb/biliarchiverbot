@@ -27,4 +27,8 @@ FROM base
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/.svelte-kit /app/.svelte-kit
 EXPOSE 5173
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=3 --spider http://127.0.0.1:5173/favicon.png || exit 1
+
 CMD ["pnpm", "dev", "--host", "--port", "5173"]
