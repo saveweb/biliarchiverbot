@@ -164,10 +164,13 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   const processSource = async () => {
     let existingCount = 0;
     let newCount = 0;
+    let processingCount = 0;
     let processedCount = 0;
     let newBvids: string[] = [];
     let lastMessageText = '';
     let lastOptions: any = {};
+    const progress = await api.getitems();
+    const allBvids = progress.map(item => item.bvid);
     
     const updateStatus = async () => {
       try {
@@ -175,6 +178,7 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
           `Total: ${bvids.length}\n` +
           `${existingCount > 0 ? `Existing: ${existingCount}\n` : ''}` +
           `${newCount > 0 ? `New: ${newCount}\n` : ''}` +
+          `${processingCount > 0 ? `Processing: ${processingCount}\n` : ''}` +
           `${processedCount > 0 ? `Processed: ${processedCount}\n` : ''}`;
   
         const options: any = {};
@@ -216,10 +220,12 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   
         if (result.isSome()) {
           existingCount++;
-        } else {
+        } else if (!allBvids.includes(bvid)) {
           newCount++;
           newBvids.push(bvid);
           await api.add(new Bvid(bvid));
+        } else {
+          processingCount++;
         }
         processedCount++;
       }
