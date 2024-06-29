@@ -290,7 +290,7 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
 
     if (remainingBvids.length > 0 && checked_turns < 30) {
       setTimeout(checkArchives, 1200000); // 20 minutes
-    } else if (remainingBvids.length = 0) {
+    } else if (remainingBvids.length === 0) {
       await ctx.reply(`All items have been processed.`, {
         reply_markup,
       });
