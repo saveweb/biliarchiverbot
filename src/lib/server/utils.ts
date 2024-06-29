@@ -192,90 +192,85 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
 
   const bvids = await api.add_from_source(source_type, source_id);
 
-  const processSource = async () => {
-    let existingCount = 0;
-    let newCount = 0;
-    let processingCount = 0;
-    let processedCount = 0;
-    let newBvids: string[] = [];
-    let lastMessageText = '';
-    let lastOptions: any = {};
-    const progress = await api.getitems();
-    const allBvids = progress.map(item => item.bvid);
-    
-    const unprocessedBvids = bvids.filter(bvid => !allBvids.includes(bvid));
-    processingCount = bvids.length - unprocessedBvids.length;
-    newBvids = bvids.filter(bvid => !unprocessedBvids.includes(bvid));
+  let existingCount = 0;
+  let newCount = 0;
+  let processingCount = 0;
+  let processedCount = 0;
+  let newBvids: string[] = [];
+  let lastMessageText = '';
+  let lastOptions: any = {};
+  const progress = await api.getitems();
+  const allBvids = progress.map(item => item.bvid);
   
-    const updateStatus = async () => {
-      try {
-        const messageText = `Processing [${source_to_name(source_type)} ${source_id}](${source_to_link(source_type, source_id)})\n` +
-          `Total: ${bvids.length}\n` +
-          `${existingCount > 0 ? `Existing: ${existingCount}\n` : ''}` +
-          `${newCount > 0 ? `New: ${newCount}\n` : ''}` +
-          `${processingCount > 0 ? `Processing: ${processingCount}\n` : ''}` +
-          `${processedCount > 0 ? `Processed: ${processedCount}\n` : ''}`;
-  
-        let options: any = { parse_mode: "MarkdownV2" };
-        if (newCount > 0) {
-          options.reply_markup = reply_markup;
-        }
+  const unprocessedBvids = bvids.filter(bvid => !allBvids.includes(bvid));
+  processingCount = bvids.length - unprocessedBvids.length;
+  newBvids = bvids.filter(bvid => !unprocessedBvids.includes(bvid));
 
-        if (messageText === lastMessageText && JSON.stringify(options) === JSON.stringify(lastOptions)) {
-          return; // 如果消息没有变化，直接返回
-        }
+  const updateStatus = async () => {
+    try {
+      const messageText = `Processing [${source_to_name(source_type)} ${source_id}](${source_to_link(source_type, source_id)})\n` +
+        `Total: ${bvids.length}\n` +
+        `${existingCount > 0 ? `Existing: ${existingCount}\n` : ''}` +
+        `${newCount > 0 ? `New: ${newCount}\n` : ''}` +
+        `${processingCount > 0 ? `Processing: ${processingCount}\n` : ''}` +
+        `${processedCount > 0 ? `Processed: ${processedCount}\n` : ''}`;
 
-        await ctx.api.editMessageText(
-          chat_id,
-          statusMessageId,
-          messageText,
-          options
-        );
-
-        lastMessageText = messageText;
-        lastOptions = options;
-      } catch (e) {
-        console.error("Failed to update status message:", e);
+      let options: any = { parse_mode: "MarkdownV2" };
+      if (newCount > 0) {
+        options.reply_markup = reply_markup;
       }
-    };
-  
-    const BATCH_SIZE = 10;
-    await updateStatus();
-  
-    for (let i = 0; i < unprocessedBvids.length; i += BATCH_SIZE) {
-      const batch = unprocessedBvids.slice(i, i + BATCH_SIZE);
-      
-      const results = await Promise.all(
-        batch.map(bvid => api.check(new Bvid(bvid)))
+
+      if (messageText === lastMessageText && JSON.stringify(options) === JSON.stringify(lastOptions)) {
+        return; // 如果消息没有变化，直接返回
+      }
+
+      await ctx.api.editMessageText(
+        chat_id,
+        statusMessageId,
+        messageText,
+        options
       );
-  
-      for (let j = 0; j < results.length; j++) {
-        const result = results[j];
-        const bvid = batch[j];
-  
-        if (result.isSome()) {
-          existingCount++;
-        } else {
-          newCount++;
-          newBvids.push(bvid);
-          await api.add(new Bvid(bvid));
-        }
-        processedCount++;
-      }
-      if (
-        (chat_type === "private" && processedCount % 1 === 0) ||
-        (chat_type !== "private" && processedCount % 6 === 0) ||
-        processedCount === unprocessedBvids.length
-      ) {
-        await updateStatus();
-      }
-    }
 
-    await updateStatus();
-    return newBvids;
+      lastMessageText = messageText;
+      lastOptions = options;
+    } catch (e) {
+      console.error("Failed to update status message:", e);
+    }
   };
 
-  const newBvids = await processSource();
+  const BATCH_SIZE = 10;
+  await updateStatus();
+
+  for (let i = 0; i < unprocessedBvids.length; i += BATCH_SIZE) {
+    const batch = unprocessedBvids.slice(i, i + BATCH_SIZE);
+    
+    const results = await Promise.all(
+      batch.map(bvid => api.check(new Bvid(bvid)))
+    );
+
+    for (let j = 0; j < results.length; j++) {
+      const result = results[j];
+      const bvid = batch[j];
+
+      if (result.isSome()) {
+        existingCount++;
+      } else {
+        newCount++;
+        newBvids.push(bvid);
+        await api.add(new Bvid(bvid));
+      }
+      processedCount++;
+    }
+    if (
+      (chat_type === "private" && processedCount % 1 === 0) ||
+      (chat_type !== "private" && processedCount % 6 === 0) ||
+      processedCount === unprocessedBvids.length
+    ) {
+      await updateStatus();
+    }
+  }
+
+  await updateStatus();
 
   if (newBvids.length === 0) {
     await ctx.api.editMessageText(
@@ -318,7 +313,7 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       return;
     } else {
       let messageText = `Processed all ${bvids.length} items from source [${source_to_name(source_type)} ${source_id}](${source_to_link(source_type, source_id)})\n` +
-        `Archive links: \n${newlyCompleted.map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join('\n')}\n` +
+        `Archive links: \n${newlyCompleted.map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join(', ')}\n` +
         `Remaining items: ${remainingBvids.length}\n` +
         `Checking again in 20 minutes\\.\\.\\.`;
       await ctx.api.editMessageText(
@@ -341,9 +336,9 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
     } else {
       let message = `Processed all ${bvids.length} items\\.\n` +
         `${completedBvids.length > 0 ? `Archive links: ${completedBvids.map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join('\n')}\n` : ''}` +
-        `Remaining items: ${remainingBvids.length}\\.\n` +
-        `Some items have not been processed yet after 30 checks, they are: \n` + 
-        `${remainingBvids.map(bvid => new Bvid(bvid).toMarkdownBilibiliLink()).join('\n')}`;
+        `Remaining items: ${remainingBvids.length}\n` +
+        `Some items have not been processed yet after 30 checks, they are: ` + 
+        `${remainingBvids.map(bvid => new Bvid(bvid).toMarkdownBilibiliLink()).join(', ')}`;
 
       await ctx.api.editMessageText(
         chat_id,
@@ -351,7 +346,6 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
         message,
         { parse_mode: "MarkdownV2",reply_markup:reply_markup }
       );
-      //         `Some items have not been processed yet after 30 checks, they are: \n${remainingBvids.map(bvid => new Bvid(bvid).toMarkdownBilibiliLink()).join('\n')}\\.`,
       return;
     }
   };
