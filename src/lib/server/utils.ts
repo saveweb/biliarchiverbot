@@ -172,6 +172,9 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
     const progress = await api.getitems();
     const allBvids = progress.map(item => item.bvid);
     
+    const unprocessedBvids = bvids.filter(bvid => !allBvids.includes(bvid));
+    processingCount = bvids.length - unprocessedBvids.length;
+  
     const updateStatus = async () => {
       try {
         const messageText = `Processing source ${source_type} ${source_id}:\n` +
@@ -203,12 +206,12 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
         console.error("Failed to update status message:", e);
       }
     };
-
+  
     const BATCH_SIZE = 10;
     await updateStatus();
-
-    for (let i = 0; i < bvids.length; i += BATCH_SIZE) {
-      const batch = bvids.slice(i, i + BATCH_SIZE);
+  
+    for (let i = 0; i < unprocessedBvids.length; i += BATCH_SIZE) {
+      const batch = unprocessedBvids.slice(i, i + BATCH_SIZE);
       
       const results = await Promise.all(
         batch.map(bvid => api.check(new Bvid(bvid)))
@@ -220,19 +223,17 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   
         if (result.isSome()) {
           existingCount++;
-        } else if (!allBvids.includes(bvid)) {
+        } else {
           newCount++;
           newBvids.push(bvid);
           await api.add(new Bvid(bvid));
-        } else {
-          processingCount++;
         }
         processedCount++;
       }
       if (
         (chat_type === "private" && processedCount % 1 === 0) ||
         (chat_type !== "private" && processedCount % 6 === 0) ||
-        processedCount === bvids.length
+        processedCount === unprocessedBvids.length
       ) {
         await updateStatus();
       }
