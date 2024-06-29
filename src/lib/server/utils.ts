@@ -174,6 +174,7 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
     
     const unprocessedBvids = bvids.filter(bvid => !allBvids.includes(bvid));
     processingCount = bvids.length - unprocessedBvids.length;
+    newBvids = bvids.filter(bvid => !unprocessedBvids.includes(bvid));
   
     const updateStatus = async () => {
       try {
