@@ -157,6 +157,8 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
     `Getting items from source ${source_type} ${source_id}...`,
   );
 
+  const statusMessageId = statusMessage.message_id;
+
   const bvids = await api.add_from_source(source_type, source_id);
 
   const processSource = async () => {
@@ -186,7 +188,7 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
 
         await ctx.api.editMessageText(
           chat_id,
-          statusMessage.message_id,
+          statusMessageId,
           messageText,
           options
         );
@@ -238,8 +240,8 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
 
   if (newBvids.length === 0) {
     await ctx.api.editMessageText(
-      ctx.chat.id,
-      statusMessage.message_id,
+      chat_id,
+      statusMessageId,
       `Processed all ${bvids.length} items from source ${source_type} ${source_id}.\n` +
       `${bvids.length} items already existed.\n` +
       `No new items found.`
@@ -248,8 +250,8 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   }
 
   await ctx.api.editMessageText(
-    ctx.chat.id,
-    statusMessage.message_id,
+    chat_id,
+    statusMessageId,
     `Processed all ${bvids.length} items from source ${source_type} ${source_id}.\n` +
     `${bvids.length - newBvids.length} items already existed.\n` +
     `Added ${newBvids.length} new items.\n` +
