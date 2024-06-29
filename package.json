@@ -12,6 +12,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@grammyjs/auto-retry": "^2.0.1",
 		"@roziscoding/grammy-autoquote": "^2.0.6",
 		"fast-xml-parser": "^4.3.6",
 		"grammy": "^1.21.1",

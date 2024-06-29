@@ -3,6 +3,7 @@ import { BiliArchiver } from "./api.js";
 import * as MARKUP from "./markup.js";
 import { env } from "$env/dynamic/private";
 import { autoQuote } from "@roziscoding/grammy-autoquote";
+import { autoRetry } from "@grammyjs/auto-retry";
 import { handleBiliLink } from "./utils.js";
 
 const token = env.BILIARCHIVER_BOT;
@@ -11,6 +12,7 @@ if (!token) {
 }
 const bot = new Bot(token!);
 bot.use(autoQuote());
+bot.api.config.use(autoRetry());
 const apiBase = env.BILIARCHIVER_API;
 if (!apiBase) {
   throw new Error("\x1b[31mBILIARCHIVER_API must be provided!\x1b[0m");

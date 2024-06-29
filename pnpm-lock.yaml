@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@grammyjs/auto-retry':
+        specifier: ^2.0.1
+        version: 2.0.1(grammy@1.21.1)
       '@roziscoding/grammy-autoquote':
         specifier: ^2.0.6
         version: 2.0.6(grammy@1.21.1)
@@ -205,6 +208,12 @@ packages:
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
+
+  '@grammyjs/auto-retry@2.0.1':
+    resolution: {integrity: sha512-4W2T3KeRp1IERUUqMV6jjr+3z0FD6qe7DgXdykdqzNmOb2O+MUM7cqWCcWzbIjUVwRyFyHeH+vREO1ZvKppCrg==}
+    engines: {node: '>=12.20.0 || >=14.13.1'}
+    peerDependencies:
+      grammy: ^1.10.0
 
   '@grammyjs/types@3.5.2':
     resolution: {integrity: sha512-KZlJcOdgD8N6SMIHWfwmb11L5/L2+rptWBxCexbzNCry/wfLXFFGFniyUrySnvFo+cWMxgy5GuImwY3mhUrP8g==}
@@ -877,6 +886,13 @@ snapshots:
 
   '@esbuild/win32-x64@0.20.2':
     optional: true
+
+  '@grammyjs/auto-retry@2.0.1(grammy@1.21.1)':
+    dependencies:
+      debug: 4.3.4
+      grammy: 1.21.1
+    transitivePeerDependencies:
+      - supports-color
 
   '@grammyjs/types@3.5.2': {}
 
