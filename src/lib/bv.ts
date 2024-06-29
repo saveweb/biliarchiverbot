@@ -16,6 +16,14 @@ export default class Bvid {
         }_p${part}-${this.getHumanReadableUpperPartMap()}`;
     }
 
+    toMarkdownArchiveLink(part: number = 1) {
+      return `[${this.toIdentifier(part)}](${this.getItemUrl(part)})`;
+    }
+
+    toMarkdownBilibiliLink() {
+      return `[${this.id}](https://www.bilibili.com/video/${this.id})`;
+    }
+
     getSearchXmlUrl(part: number = 1) {
       return new URL(
         `https://archive.org/advancedsearch.php?q=identifier%3A${this.toIdentifier()}&fl%5B%5D=identifier&sort%5B%5D=addeddate+desc&sort%5B%5D=&sort%5B%5D=&rows=50&page=1&callback=callback&output=xml`
