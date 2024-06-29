@@ -296,7 +296,11 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       });
       return;
     } else {
-      await ctx.reply(`Some items have not been processed yet after half an hour, they are: \n${remainingBvids.join(', ')}.`, {
+      let remainingBvidsText = '';
+      for (let i = 0; i < remainingBvids.length; i++) {
+        remainingBvidsText += remainingBvids[i] + '\n';
+      }
+      await ctx.reply(`Some items have not been processed yet after 30 checks, they are: \n${remainingBvidsText}`, {
         reply_markup,
       });
       return;
