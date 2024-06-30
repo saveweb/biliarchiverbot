@@ -17,7 +17,7 @@ export default class Bvid {
     }
 
     toMarkdownArchiveLink(part: number = 1) {
-      return `[${this.toIdentifier(part)}](${this.getItemUrl(part)})`;
+      return `[${this.id}](${this.getItemUrl(part)})`;
     }
 
     toMarkdownBilibiliLink() {
