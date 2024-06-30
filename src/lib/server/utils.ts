@@ -281,8 +281,8 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       chat_id,
       statusMessageId,
       `Processed all ${bvids.length} items from [${source_to_name(source_type)} ${source_id}](${source_to_link(source_type, source_id)})\n` +
-      `${bvids.length} items already existed.\n` +
-      `No new items found.`,
+      `${bvids.length} items already existed\\.\n` +
+      `No new items found\\.`,
       { parse_mode: "MarkdownV2" }
     );
     return;
@@ -318,7 +318,10 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       await ctx.reply(`All items have been processed.`);
       return;
     } else {
-      let messageText = lastMessageText +
+      let messageText = `Processing [${source_to_name(source_type)} ${source_id}](${source_to_link(source_type, source_id)})\n` +
+        `Total: ${bvids.length}\n` +
+        `${existingCount > 0 ? `Archived: ${existingCount}\n` : ''}` +
+        `${newCount > 0 ? `Nonexist: ${newCount}\n` : ''}` +
         `${remainingBvids.length > 0 ?
           `Archiving: ${remainingBvids.length}\n` +
           `Bili links: ${remainingBvids.length <= 5 ?
@@ -331,7 +334,7 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
           `${completedBvids.map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join(', ')}\n` :
           `${completedBvids.slice(0, 5).map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join(', ')} and ${completedBvids.length - 5} more \n`}`
           : ''}` +
-        `Checking in 20 minutes\n`
+        `Check turn: ${checked_turns}\\. Checking in 20 minutes`
       if (messageText === progressText) {
         return;
       } else {
@@ -347,20 +350,43 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
 
     checked_turns++;
 
-    if (remainingBvids.length > 0 && checked_turns < 30) {
-      setTimeout(checkArchives, 1200000); // 20 minutes
+    if (remainingBvids.length > 0 && checked_turns < 600) {
+      setTimeout(checkArchives, 60000); // 1 minutes
     } else if (remainingBvids.length === 0) {
-      await ctx.reply(`All items have been processed.`, {
-        reply_markup,
-      });
+      let message = `Processed [${source_to_name(source_type)} ${source_id}](${source_to_link(source_type, source_id)})\n` +
+      `Total: ${bvids.length}, ` +
+      `${existingCount > 0 ? `Archived: ${existingCount}, ` : ''}` +
+      `${newCount > 0 ? `Nonexist: ${newCount},\n` : ''}` +
+      `${newlyDoneCount > 0 ?
+        `Newly done: ${newlyDoneCount}\n` +
+        `Archive links: ${completedBvids.length <= 5 ?
+        `${completedBvids.map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join(', ')}\n` :
+        `${completedBvids.slice(0, 5).map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join(', ')} and ${completedBvids.length - 5} more \n`}`
+        : ''}` +
+      `Check turn: ${checked_turns}\\. Checking in 20 minutes`
+      await ctx.api.editMessageText(
+        chat_id,
+        statusMessageId,
+        message,
+        {  parse_mode: "MarkdownV2" }
+      );
       return;
     } else {
-      let message = `Processed all ${bvids.length} items\\.\n` +
-        `${completedBvids.length > 0 ? `Archive links: ${completedBvids.map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join('\n')}\n` : ''}` +
-        `Remaining items: ${remainingBvids.length}\n` +
-        `Some items have not been processed yet after 30 checks, they are: ` + 
-        `${remainingBvids.map(bvid => new Bvid(bvid).toMarkdownBilibiliLink()).join(', ')}`;
-
+      let message = `Processed [${source_to_name(source_type)} ${source_id}](${source_to_link(source_type, source_id)})\n` +
+        `Total: ${bvids.length}, ` +
+        `${existingCount > 0 ? `Archived: ${existingCount}, ` : ''}` +
+        `${newCount > 0 ? `Nonexist: ${newCount},\n` : ''}` +
+        `${newlyDoneCount > 0 ?
+          `Newly done: ${newlyDoneCount}\n` +
+          `Archive links: ${completedBvids.length <= 5 ?
+          `${completedBvids.map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join(', ')}\n` :
+          `${completedBvids.slice(0, 5).map(bvid => new Bvid(bvid).toMarkdownArchiveLink()).join(', ')} and ${completedBvids.length - 5} more \n`}`
+          : ''}` +
+        `Check turn: ${checked_turns}\\. Some items have not been processed yet, they are: ` +
+        `${remainingBvids.length <= 5 ?
+          `${remainingBvids.map(bvid => new Bvid(bvid).toMarkdownBilibiliLink()).join(', ')}\n` :
+          `${remainingBvids.slice(0, 5).map(bvid => new Bvid(bvid).toMarkdownBilibiliLink()).join(', ')} and ${remainingBvids.length - 5} more \n`}` +
+          `Click the botton below to check the status of these items.`;
       await ctx.api.editMessageText(
         chat_id,
         statusMessageId,
