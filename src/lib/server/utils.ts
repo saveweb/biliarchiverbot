@@ -321,7 +321,7 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       let messageText = lastMessageText +
         `${remainingBvids.length > 0 ?
           `Archiving: ${remainingBvids.length}\n` +
-          `Bibli links: ${remainingBvids.length <= 5 ?
+          `Bili links: ${remainingBvids.length <= 5 ?
           `${remainingBvids.map(bvid => new Bvid(bvid).toMarkdownBilibiliLink()).join(', ')}\n` :
           `${remainingBvids.slice(0, 5).map(bvid => new Bvid(bvid).toMarkdownBilibiliLink()).join(', ')} and ${remainingBvids.length - 5} more \n`}`
           : ''}` +
