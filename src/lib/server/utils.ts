@@ -190,7 +190,19 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
 
   const statusMessageId = statusMessage.message_id;
 
-  const bvids = await api.add_from_source(source_type, source_id);
+  let bvids = await api.add_from_source(source_type, source_id);
+  let allow_all_chat_id: number[] = [];
+  if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === 'number') {
+    allow_all_chat_id = [env.BILIARCHIVER_ALLOW_ALL_CHAT_ID];
+  } else if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === 'string') {
+    allow_all_chat_id = env.BILIARCHIVER_ALLOW_ALL_CHAT_ID.split(',').map(Number);
+  }
+
+  if (chat_id !== 0 && !allow_all_chat_id.includes(chat_id)) {
+    if (bvids.length > 3) {
+      bvids = bvids.slice(0, 3);
+    }
+  }
 
   let existingCount = 0;
   let newCount = 0;
@@ -201,22 +213,8 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   let lastMessageText = '';
   let lastOptions: any = {};
   const progress = await api.getitems();
-  let allBvids = progress.map(item => item.bvid);
+  const allBvids = progress.map(item => item.bvid);
   console.debug(`All BVIDs: ${allBvids.join(', ')}`);
-
-
-  let allow_all_chat_id: number[] = [];
-  if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === 'number') {
-    allow_all_chat_id = [env.BILIARCHIVER_ALLOW_ALL_CHAT_ID];
-  } else if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === 'string') {
-    allow_all_chat_id = env.BILIARCHIVER_ALLOW_ALL_CHAT_ID.split(',').map(Number);
-  }
-
-  if (chat_id !== 0 && !allow_all_chat_id.includes(chat_id)) {
-    if (allBvids.length > 3) {
-      allBvids = allBvids.slice(0, 3);
-    }
-  }
   
   const unprocessedBvids = bvids.filter(bvid => !allBvids.includes(bvid));
   console.debug(`Unprocessed BVIDs: ${unprocessedBvids.join(', ')}`);
