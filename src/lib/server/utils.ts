@@ -201,8 +201,22 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   let lastMessageText = '';
   let lastOptions: any = {};
   const progress = await api.getitems();
-  const allBvids = progress.map(item => item.bvid);
+  let allBvids = progress.map(item => item.bvid);
   console.debug(`All BVIDs: ${allBvids.join(', ')}`);
+
+
+  let allow_all_chat_id: number[] = [];
+  if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === 'number') {
+    allow_all_chat_id = [env.BILIARCHIVER_ALLOW_ALL_CHAT_ID];
+  } else if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === 'string') {
+    allow_all_chat_id = env.BILIARCHIVER_ALLOW_ALL_CHAT_ID.split(',').map(Number);
+  }
+
+  if (chat_id !== 0 && !allow_all_chat_id.includes(chat_id)) {
+    if (allBvids.length > 3) {
+      allBvids = allBvids.slice(0, 3);
+    }
+  }
   
   const unprocessedBvids = bvids.filter(bvid => !allBvids.includes(bvid));
   console.debug(`Unprocessed BVIDs: ${unprocessedBvids.join(', ')}`);
