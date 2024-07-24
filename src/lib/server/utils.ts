@@ -141,9 +141,9 @@ const source_to_link = (source_type: string, source_id: string) => {
     case "season":
       return `https://space.bilibili.com/1/channel/collectiondetail?sid=${source_id}`;
     case "favlist":
-      return `https://space.bilibili.com/list/ml${source_id}`;
+      return `https://www.bilibili.com/list/ml${source_id}`;
     case "series":
-      return `https://space.bilibili.com/list/${source_id}?sid=${source_id}`;
+      return `https://www.bilibili.com/list/${source_id}?sid=${source_id}`;
     case "up_videos":
       return `https://space.bilibili.com/${source_id}`;
     default:
