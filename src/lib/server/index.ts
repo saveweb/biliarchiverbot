@@ -41,7 +41,7 @@ bot.command("help", (ctx) =>
 bot.command("bili", async (ctx) => {
   await handleBiliLink(ctx);
 });
-bot.hears(/(BV[a-zA-Z0-9]+)|(av\d+)|b23\.(tv|wtf)\/\S+|www\.bilibili\.com\/(video|medialist|list)\/\S+|space\.bilibili\.com\/\d+/i, async (ctx) => {
+bot.hears(/(BV[a-zA-Z0-9]+)|(av\d+)|(bili2233.cn|b23\.(tv|wtf))\/\S+|www\.bilibili\.com\/(video|medialist|list)\/\S+|space\.bilibili\.com\/\d+/i, async (ctx) => {
   await handleBiliLink(ctx);
 });
 
