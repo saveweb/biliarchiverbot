@@ -74,7 +74,13 @@ const handleBiliLink = async (ctx: Context) => {
   }
   console.info("Regex matches", matches[0]);
   const bv = new Bvid(matches[0]);
-  console.log("Found", ctx.chat.id, ctx.message.text);
+  console.log("Found", {
+    chatId: ctx.chat?.id ?? "unknown",
+    chatType: ctx.chat?.type ?? "unknown",
+    fromUser: ctx.from?.username ?? ctx.from?.first_name ?? ctx.from?.id?.toString() ?? "unknown",
+    text: ctx.message?.text ?? "no text"
+  });
+
   let pending;
   try {
     pending = await ctx.reply("正在发送请求……", {
