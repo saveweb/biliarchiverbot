@@ -1,11 +1,20 @@
 # biliarchiverbot
 
+## Configuration & Data Storage
+
+> ⚠️ Note: File-based storage requires a persistent filesystem. This will NOT work on Vercel or similar serverless platforms. Use Docker or local deployment for admin/blacklist features.
+
+The bot stores configuration in the `config` directory:
+- `admins.json`: Admin user IDs
+- `blacklist.json`: Blocked user IDs
+
 ## Using Docker
 
 ``` shell
 docker run -d \
   --name biliarchiverbot \
   -p 5173:5173 \
+  -v $(pwd)/config:/app/config \
   -e BILIARCHIVER_WEBAPP={THE_DEPLOYED_WEBAPP_URL}\
   -e BILIARCHIVER_USERNAME={THE_TELEGRAM_USERNAME_OF_BILIARCHIVER_BOT}\
   -e BILIARCHIVER_API={THE_API_URL_OF_BILIARCHIVER}\
@@ -82,3 +91,18 @@ If you don't have public IP, you can use [ngrok](https://ngrok.com/) to expose y
    ``` shell
    https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=<DEPLOY_URL>/bot/webhook
    ```
+
+## Manage
+
+### Admin Management
+The first user to run `/addadmin` becomes the admin. After that, only admins can add new admins using:
+```shell
+/addadmin <USER_ID>
+```
+
+### User Management
+Admins can blacklist users using:
+```shell
+/blacklist <USER_ID>
+```
+Blacklisted users will be unable to use the bot and will be directed to contact the first admin.

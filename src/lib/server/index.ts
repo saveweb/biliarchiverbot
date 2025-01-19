@@ -1,6 +1,8 @@
 import { Bot, webhookCallback, Context, GrammyError, HttpError } from "grammy";
 import { BiliArchiver } from "./api.js";
 import * as MARKUP from "./markup.js";
+import { isAdmin, addAdmin, listAdmins } from "./admin.ts";
+import { isBlacklisted, addToBlacklist } from "./blacklist.ts";
 import { env } from "$env/dynamic/private";
 import { autoQuote } from "@roziscoding/grammy-autoquote";
 import { autoRetry } from "@grammyjs/auto-retry";
@@ -41,15 +43,23 @@ bot.command("help", (ctx) =>
 bot.command("bili", async (ctx) => {
   await handleBiliLink(ctx);
 });
-bot.hears(/(BV[a-zA-Z0-9]+)|(av\d+)|(bili2233.cn|b23\.(tv|wtf))\/\S+|www\.bilibili\.com\/(video|medialist|list)\/\S+|space\.bilibili\.com\/\d+/i, async (ctx) => {
-  await handleBiliLink(ctx);
-});
+bot.hears(
+  /(BV[a-zA-Z0-9]+)|(av\d+)|(bili2233.cn|b23\.(tv|wtf))\/\S+|www\.bilibili\.com\/(video|medialist|list)\/\S+|space\.bilibili\.com\/\d+/i,
+  async (ctx) => {
+    await handleBiliLink(ctx);
+  }
+);
 
 bot.command("bilist", async (ctx) => {
   const queue = await api.queue();
   const text = queue.length
     ? `**${queue.length} items in queue pending or archiving:**\n${
-        queue.length > 10 ? queue.slice(0, 10).join("\n") + "\nAnd " + (queue.length - 10) + " more" : queue.join("\n")
+        queue.length > 10
+          ? queue.slice(0, 10).join("\n") +
+            "\nAnd " +
+            (queue.length - 10) +
+            " more"
+          : queue.join("\n")
       }`
     : "**All items in queue have been archived**";
   const reply_markup =
@@ -59,6 +69,58 @@ bot.command("bilist", async (ctx) => {
     parse_mode: "MarkdownV2",
     reply_markup,
   });
+});
+bot.command("addadmin", async (ctx) => {
+  const senderId = ctx.from?.id;
+  if (!senderId) return;
+
+  const targetId = Number(ctx.match);
+
+  if (!isAdmin(senderId)) {
+    if (listAdmins().length === 0) {
+      // First admin
+      addAdmin(senderId);
+      await ctx.reply("You are now the first admin.");
+    }
+    return;
+  }
+
+  if (!targetId || isNaN(targetId)) {
+    await ctx.reply("Please provide a valid user ID");
+    return;
+  }
+
+  addAdmin(targetId);
+  await ctx.reply(`Added ${targetId} as admin.`);
+});
+
+bot.use(async (ctx, next) => {
+  if (ctx.from && isBlacklisted(ctx.from.id)) {
+    const Admins = listAdmins();
+    const adminMentions = Admins.map(id => `[${id}](tg://user?id=${id})`).join('; ');
+    await ctx.reply(
+      `You have been blacklisted from using this bot. ` +
+      `If you think this is a mistake, please contact admins: ` +
+      adminMentions,
+      { parse_mode: "MarkdownV2" }
+    );
+    return;
+  }
+  return next();
+});
+bot.command("blacklist", async (ctx) => {
+  if (!ctx.from || !isAdmin(ctx.from.id)) {
+    return;
+  }
+
+  const userId = Number(ctx.match);
+  if (isNaN(userId)) {
+    await ctx.reply("Invalid user ID");
+    return;
+  }
+
+  addToBlacklist(userId);
+  await ctx.reply(`User ${userId} has been blacklisted.`);
 });
 
 bot.catch((err) => {
