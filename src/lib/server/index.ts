@@ -99,7 +99,7 @@ bot.use(async (ctx, next) => {
     const Admins = listAdmins();
     const adminMentions = Admins.map(id => `[${id}](tg://user?id=${id})`).join('; ');
     await ctx.reply(
-      `You have been blacklisted from using this bot. ` +
+      `You have been blacklisted from using this bot, ` +
       `If you think this is a mistake, please contact admins: ` +
       adminMentions,
       { parse_mode: "MarkdownV2" }
