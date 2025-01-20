@@ -6,6 +6,7 @@ import {
   isBlacklisted,
   addToBlacklist,
   removeFromBlacklist,
+  listBlacklist,
 } from "./blacklist.ts";
 import { env } from "$env/dynamic/private";
 import { autoQuote } from "@roziscoding/grammy-autoquote";
@@ -172,6 +173,15 @@ bot.command("removeadmin", (ctx) =>
   handleAdminCommand(ctx, removeAdmin, (id) => `Removed ${id} from admin.`)
 );
 
+bot.command("listadmins", async (ctx) => {
+  const Admins = listAdmins();
+  const adminMentions = Admins.map((id) => `[${id}](tg://user?id=${id})`);
+  await ctx.reply(
+    `Admins: ${adminMentions.join("; ")}`,
+    { parse_mode: "MarkdownV2" }
+  );
+});
+
 bot.command("blacklist", async (ctx) =>
   handleAdminCommand(
     ctx,
@@ -187,6 +197,17 @@ bot.command("unblacklist", async (ctx) =>
     (id) => `User ${id} has been removed from blacklist.`
   )
 );
+
+bot.command("listblacklist", async (ctx) => {
+  const blacklist = listBlacklist();
+  const blacklistMentions = blacklist.map(
+    (id) => `[${id}](tg://user?id=${id})`
+  );
+  await ctx.reply(
+    `Blacklisted users: ${blacklistMentions.join("; ")}`,
+    { parse_mode: "MarkdownV2" }
+  );
+});
 
 bot.catch((err) => {
   const ctx = err.ctx;

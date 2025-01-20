@@ -28,5 +28,9 @@ export function removeFromBlacklist(userId: number): void {
   saveJSON("blacklist.json", Array.from(blacklistedUsers));
 }
 
+export function listBlacklist(): number[] {
+  return Array.from(blacklistedUsers);
+}
+
 // Initialize blacklist
 initBlacklist().catch(console.error);
