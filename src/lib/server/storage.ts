@@ -2,31 +2,47 @@ import { env } from "$env/dynamic/private";
 
 const isEnabled = env.BILIARCHIVER_ENABLE_BLACKLIST === "true";
 
-let fs: any;
-let path: any;
+async function getModules() {
+  if (!isEnabled) return null;
+  const fs = await import("fs");
+  const path = await import("path");
+  return { fs, path };
+}
 
-if (isEnabled) {
-  fs = await import("fs");
-  path = await import("path");
+async function ensureConfigDir() {
+  const modules = await getModules();
+  if (!modules) return;
 
-  const CONFIG_DIR = path.join(process.cwd(), "config");
-  if (!fs.existsSync(CONFIG_DIR)) {
-    fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  const CONFIG_DIR = modules.path.join(process.cwd(), "config");
+  if (!modules.fs.existsSync(CONFIG_DIR)) {
+    modules.fs.mkdirSync(CONFIG_DIR, { recursive: true });
   }
 }
 
-export function loadJSON<T>(filename: string, defaultValue: T): T {
+export async function loadJSON<T>(
+  filename: string,
+  defaultValue: T
+): Promise<T> {
   if (!isEnabled) return defaultValue;
-  const filepath = path.join(process.cwd(), "config", filename);
+
+  const modules = await getModules();
+  if (!modules) return defaultValue;
+
+  const filepath = modules.path.join(process.cwd(), "config", filename);
   try {
-    return JSON.parse(fs.readFileSync(filepath, "utf-8"));
+    return JSON.parse(modules.fs.readFileSync(filepath, "utf-8"));
   } catch {
     return defaultValue;
   }
 }
 
-export function saveJSON(filename: string, data: any): void {
+export async function saveJSON(filename: string, data: any): Promise<void> {
   if (!isEnabled) return;
-  const filepath = path.join(process.cwd(), "config", filename);
-  fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
+
+  const modules = await getModules();
+  if (!modules) return;
+
+  await ensureConfigDir();
+  const filepath = modules.path.join(process.cwd(), "config", filename);
+  modules.fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
 }
