@@ -1,6 +1,12 @@
 import { Bot, webhookCallback, Context, GrammyError, HttpError } from "grammy";
 import { BiliArchiver } from "./api.js";
 import * as MARKUP from "./markup.js";
+import { isAdmin, addAdmin, removeAdmin, listAdmins } from "./admin.ts";
+import {
+  isBlacklisted,
+  addToBlacklist,
+  removeFromBlacklist,
+} from "./blacklist.ts";
 import { env } from "$env/dynamic/private";
 import { autoQuote } from "@roziscoding/grammy-autoquote";
 import { autoRetry } from "@grammyjs/auto-retry";
@@ -38,18 +44,46 @@ bot.command("help", (ctx) =>
   )
 );
 
+bot.use(async (ctx, next) => {
+  if (env.BILIARCHIVER_ENABLE_BLACKLIST !== "true") {
+    return next();
+  }
+  if (ctx.from && isBlacklisted(ctx.from.id)) {
+    const Admins = listAdmins();
+    const adminMentions = Admins.map(
+      (id) => `[${id}](tg://user?id=${id})`
+    ).join("; ");
+    await ctx.reply(
+      `You have been blacklisted from using this bot, ` +
+        `If you think this is a mistake, please contact admins: ` +
+        adminMentions,
+      { parse_mode: "MarkdownV2" }
+    );
+    return;
+  }
+  return next();
+});
+
 bot.command("bili", async (ctx) => {
   await handleBiliLink(ctx);
 });
-bot.hears(/(BV[a-zA-Z0-9]+)|(av\d+)|(bili2233.cn|b23\.(tv|wtf))\/\S+|www\.bilibili\.com\/(video|medialist|list)\/\S+|space\.bilibili\.com\/\d+/i, async (ctx) => {
-  await handleBiliLink(ctx);
-});
+bot.hears(
+  /(BV[a-zA-Z0-9]+)|(av\d+)|(bili2233.cn|b23\.(tv|wtf))\/\S+|www\.bilibili\.com\/(video|medialist|list)\/\S+|space\.bilibili\.com\/\d+/i,
+  async (ctx) => {
+    await handleBiliLink(ctx);
+  }
+);
 
 bot.command("bilist", async (ctx) => {
   const queue = await api.queue();
   const text = queue.length
     ? `**${queue.length} items in queue pending or archiving:**\n${
-        queue.length > 10 ? queue.slice(0, 10).join("\n") + "\nAnd " + (queue.length - 10) + " more" : queue.join("\n")
+        queue.length > 10
+          ? queue.slice(0, 10).join("\n") +
+            "\nAnd " +
+            (queue.length - 10) +
+            " more"
+          : queue.join("\n")
       }`
     : "**All items in queue have been archived**";
   const reply_markup =
@@ -60,6 +94,69 @@ bot.command("bilist", async (ctx) => {
     reply_markup,
   });
 });
+
+const handleAdminCommand = async (
+  ctx: Context,
+  action: (id: number) => void,
+  successMsg: (id: number) => string
+) => {
+  console.log(
+    "Admin command received from id " +
+      (ctx.from && ctx.from.id + " " + ctx.from.username) +
+      ", uses " +
+      action.name +
+      ", resulting " +
+      successMsg(0)
+  );
+  if (env.BILIARCHIVER_ENABLE_BLACKLIST !== "true") {
+    await ctx.reply("Admin functionality is not enabled");
+    return;
+  }
+
+  const senderId = ctx.from?.id;
+  if (!senderId) return;
+
+  const targetId = Number(ctx.match);
+  if (!isAdmin(senderId)) {
+    if (action === addAdmin && listAdmins().length === 0) {
+      addAdmin(senderId);
+      await ctx.reply("You are now the first admin.");
+    }
+    return;
+  }
+
+  if (!targetId || isNaN(targetId)) {
+    await ctx.reply("Please provide a valid user ID");
+    return;
+  }
+
+  action(targetId);
+  await ctx.reply(successMsg(targetId));
+};
+
+bot.command("addadmin", (ctx) =>
+  handleAdminCommand(ctx, addAdmin, (id) => `Added ${id} as admin.`)
+);
+
+bot.command("removeadmin", (ctx) =>
+  handleAdminCommand(ctx, removeAdmin, (id) => `Removed ${id} from admin.`)
+);
+
+bot.command("blacklist", async (ctx) =>
+  handleAdminCommand(
+    ctx,
+    addToBlacklist,
+    (id) => `User ${id} has been blacklisted.`
+  )
+);
+
+bot.command("unblacklist", async (ctx) =>
+  handleAdminCommand(
+    ctx,
+    removeFromBlacklist,
+    (id) => `User ${id} has been removed from blacklist.`
+  )
+);
 
 bot.catch((err) => {
   const ctx = err.ctx;
