@@ -40,6 +40,21 @@ bot.command("help", (ctx) =>
   )
 );
 
+bot.use(async (ctx, next) => {
+  if (ctx.from && isBlacklisted(ctx.from.id)) {
+    const Admins = listAdmins();
+    const adminMentions = Admins.map(id => `[${id}](tg://user?id=${id})`).join('; ');
+    await ctx.reply(
+      `You have been blacklisted from using this bot, ` +
+      `If you think this is a mistake, please contact admins: ` +
+      adminMentions,
+      { parse_mode: "MarkdownV2" }
+    );
+    return;
+  }
+  return next();
+});
+
 bot.command("bili", async (ctx) => {
   await handleBiliLink(ctx);
 });
@@ -94,20 +109,6 @@ bot.command("addadmin", async (ctx) => {
   await ctx.reply(`Added ${targetId} as admin.`);
 });
 
-bot.use(async (ctx, next) => {
-  if (ctx.from && isBlacklisted(ctx.from.id)) {
-    const Admins = listAdmins();
-    const adminMentions = Admins.map(id => `[${id}](tg://user?id=${id})`).join('; ');
-    await ctx.reply(
-      `You have been blacklisted from using this bot, ` +
-      `If you think this is a mistake, please contact admins: ` +
-      adminMentions,
-      { parse_mode: "MarkdownV2" }
-    );
-    return;
-  }
-  return next();
-});
 bot.command("blacklist", async (ctx) => {
   if (!ctx.from || !isAdmin(ctx.from.id)) {
     return;
