@@ -19,6 +19,7 @@ docker run -d \
   -e BILIARCHIVER_USERNAME={THE_TELEGRAM_USERNAME_OF_BILIARCHIVER_BOT}\
   -e BILIARCHIVER_API={THE_API_URL_OF_BILIARCHIVER}\
   -e BILIARCHIVER_BOT={YOUR_BOT_TOKEN}\
+  -e BILIARCHIVER_ENABLE_BLACKLIST=true\ # Optional, if you want to enable blacklist feature, don't forget to trigger /addadmin command first
   --restart always \
   ghcr.io/saveweb/biliarchiverbot:latest
 ```
