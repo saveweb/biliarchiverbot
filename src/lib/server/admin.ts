@@ -23,6 +23,13 @@ export function addAdmin(userId: number): boolean {
   return true;
 }
 
+export function removeAdmin(userId: number): boolean {
+  if (!isEnabled) return false;
+  adminUsers.delete(userId);
+  saveJSON("admins.json", Array.from(adminUsers));
+  return true;
+}
+
 export function listAdmins(): number[] {
   if (!isEnabled) return [];
   return Array.from(adminUsers);

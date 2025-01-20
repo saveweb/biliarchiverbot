@@ -1,8 +1,8 @@
 import { Bot, webhookCallback, Context, GrammyError, HttpError } from "grammy";
 import { BiliArchiver } from "./api.js";
 import * as MARKUP from "./markup.js";
-import { isAdmin, addAdmin, listAdmins } from "./admin.ts";
-import { isBlacklisted, addToBlacklist } from "./blacklist.ts";
+import { isAdmin, addAdmin, removeAdmin, listAdmins } from "./admin.ts";
+import { isBlacklisted, addToBlacklist, removeFromBlacklist } from "./blacklist.ts";
 import { env } from "$env/dynamic/private";
 import { autoQuote } from "@roziscoding/grammy-autoquote";
 import { autoRetry } from "@grammyjs/auto-retry";
@@ -118,6 +118,29 @@ bot.command("addadmin", async (ctx) => {
   await ctx.reply(`Added ${targetId} as admin.`);
 });
 
+bot.command("removeadmin", async (ctx) => {
+  if (env.BILIARCHIVER_ENABLE_BLACKLIST !== "true") {
+    await ctx.reply("Admin functionality is not enabled");
+    return;
+  }
+  const senderId = ctx.from?.id;
+  if (!senderId) return;
+
+  const targetId = Number(ctx.match);
+
+  if (!isAdmin(senderId)) {
+    return;
+  }
+
+  if (!targetId || isNaN(targetId)) {
+    await ctx.reply("Please provide a valid user ID");
+    return;
+  }
+
+  removeAdmin(targetId);
+  await ctx.reply(`Removed ${targetId} from admin.`);
+});
+
 bot.command("blacklist", async (ctx) => {
   if (env.BILIARCHIVER_ENABLE_BLACKLIST !== "true") {
     await ctx.reply("Blacklist functionality is not enabled");
@@ -136,6 +159,31 @@ bot.command("blacklist", async (ctx) => {
 
   addToBlacklist(userId);
   await ctx.reply(`User ${userId} has been blacklisted.`);
+});
+
+bot.command("unblacklist", async (ctx) => {
+  if (env.BILIARCHIVER_ENABLE_BLACKLIST !== "true") {
+    await ctx.reply("Blacklist functionality is not enabled");
+    return;
+  }
+
+  if (!ctx.from || !isAdmin(ctx.from.id)) {
+    return;
+  }
+
+  const userId = Number(ctx.match);
+  if (isNaN(userId)) {
+    await ctx.reply("Invalid user ID");
+    return;
+  }
+
+  if (!isBlacklisted(userId)) {
+    await ctx.reply(`User ${userId} is not blacklisted.`);
+    return;
+  }
+
+  removeFromBlacklist(userId);
+  await ctx.reply(`User ${userId} has been removed from blacklist.`);
 });
 
 bot.catch((err) => {
