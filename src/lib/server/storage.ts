@@ -4,11 +4,14 @@ const isEnabled = env.BILIARCHIVER_ENABLE_BLACKLIST === "true";
 
 async function getModules() {
   if (!isEnabled) return null;
-  const fs = await import("fs");
-  const path = await import("path");
+  // Use a function call so it's not statically imported
+  const importFsPath = new Function("return import('fs')") as () => Promise<any>;
+  const importPath = new Function("return import('path')") as () => Promise<any>;
+
+  const fs = await importFsPath();
+  const path = await importPath();
   return { fs, path };
 }
-
 async function ensureConfigDir() {
   const modules = await getModules();
   if (!modules) return;
