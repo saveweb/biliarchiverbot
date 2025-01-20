@@ -1,24 +1,24 @@
-import { loadJSON, saveJSON } from './storage.js';
+import { env } from "$env/dynamic/private";
+import { loadJSON, saveJSON } from "./storage.js";
 
-const adminUsers = new Set<number>(
-  loadJSON<number[]>('admins.json', [])
-);
-
-let firstAdmin: number | null = null;
+const isEnabled = env.BILIARCHIVER_ENABLE_BLACKLIST === "true";
+const adminUsers = isEnabled
+  ? new Set<number>(loadJSON<number[]>("admins.json", []))
+  : new Set<number>();
 
 export function isAdmin(userId: number): boolean {
+  if (!isEnabled) return false;
   return adminUsers.has(userId);
 }
 
 export function addAdmin(userId: number): boolean {
-  if (adminUsers.size === 0) {
-    firstAdmin = userId;
-  }
+  if (!isEnabled) return false;
   adminUsers.add(userId);
-  saveJSON('admins.json', Array.from(adminUsers));
+  saveJSON("admins.json", Array.from(adminUsers));
   return true;
 }
 
 export function listAdmins(): number[] {
+  if (!isEnabled) return [];
   return Array.from(adminUsers);
 }

@@ -41,13 +41,18 @@ bot.command("help", (ctx) =>
 );
 
 bot.use(async (ctx, next) => {
+  if (env.BILIARCHIVER_ENABLE_BLACKLIST !== "true") {
+    return next();
+  }
   if (ctx.from && isBlacklisted(ctx.from.id)) {
     const Admins = listAdmins();
-    const adminMentions = Admins.map(id => `[${id}](tg://user?id=${id})`).join('; ');
+    const adminMentions = Admins.map(
+      (id) => `[${id}](tg://user?id=${id})`
+    ).join("; ");
     await ctx.reply(
       `You have been blacklisted from using this bot, ` +
-      `If you think this is a mistake, please contact admins: ` +
-      adminMentions,
+        `If you think this is a mistake, please contact admins: ` +
+        adminMentions,
       { parse_mode: "MarkdownV2" }
     );
     return;
@@ -86,6 +91,10 @@ bot.command("bilist", async (ctx) => {
   });
 });
 bot.command("addadmin", async (ctx) => {
+  if (env.BILIARCHIVER_ENABLE_BLACKLIST !== "true") {
+    await ctx.reply("Admin functionality is not enabled");
+    return;
+  }
   const senderId = ctx.from?.id;
   if (!senderId) return;
 
@@ -110,6 +119,11 @@ bot.command("addadmin", async (ctx) => {
 });
 
 bot.command("blacklist", async (ctx) => {
+  if (env.BILIARCHIVER_ENABLE_BLACKLIST !== "true") {
+    await ctx.reply("Blacklist functionality is not enabled");
+    return;
+  }
+
   if (!ctx.from || !isAdmin(ctx.from.id)) {
     return;
   }
