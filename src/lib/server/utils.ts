@@ -4,6 +4,7 @@ import resolveB23 from "./b23.js";
 import * as MARKUP from "./markup.js";
 import { BiliArchiver } from "./api.js";
 import { env } from "$env/dynamic/private";
+import type { Message } from "grammy/types";
 
 const apiBase = env.BILIARCHIVER_API;
 if (!apiBase) {
@@ -13,14 +14,23 @@ const api = new BiliArchiver(new URL(apiBase));
 
 const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
 
-  if (!ctx.message?.text || !ctx.chat) {
-    return;
+  const { message, chat } = ctx;
+  if (!message || !chat) return;
+
+  let text = message.text ?? message.caption;
+  if (!text) return;
+
+  // save original text for logging
+  const originalText = text;
+  const replyTo = message.reply_to_message;
+  const replyToText = replyTo?.text ?? replyTo?.caption;
+
+  // include reply_to_message.text for /bili command
+  if (includeReplyTo && replyTo) {
+    // /bili  ->  /bili + /n + <reply to message text>
+    if (replyToText) text += "\n" + replyToText;
   }
 
-  let text = ctx.message?.text;
-  if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
-    text = ctx.message.reply_to_message.text + "\n" + text;
-  }
   text = await resolveB23(text);
   console.info("Resolved", text);
 
@@ -35,17 +45,23 @@ const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
 
   // handle BVid
   const bv = new Bvid(matches[0]);
-  console.log("Found", {
-    chatId: ctx.chat?.id ?? "unknown",
-    chatType: ctx.chat?.type ?? "unknown",
-    fromUser: ctx.from?.username ?? ctx.from?.first_name ?? ctx.from?.id?.toString() ?? "unknown",
-    text: ctx.message?.text ?? "no text"
-  });
+
+  { // log found
+    const { from } = ctx;
+    const user = from?.username ?? from?.first_name ?? from?.id?.toString();
+    console.log("Found", {
+      chatId: chat.id ?? "unknown",
+      chatType: chat.type ?? "unknown",
+      fromUser: user ?? "unknown",
+      text: originalText ?? "no text",
+      replyText: replyToText ?? "no text"
+    });
+  }
 
   let pending: Message.TextMessage;
   try {
     pending = await ctx.reply("正在发送请求……", {
-      reply_to_message_id: ctx.message.message_id,
+      reply_to_message_id: message.message_id,
     });
   } catch (e) {
     return;
@@ -54,7 +70,7 @@ const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
   const success = await api.add(bv);
 
   const reply_markup =
-    ctx.chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
+    chat.type === "private" ? MARKUP.MINIAPP_PRIVATE : MARKUP.MINIAPP;
 
   (async () => {
     const sleep = (ms: number) =>
