@@ -1,4 +1,4 @@
-import { Bot, webhookCallback, Context, GrammyError, HttpError } from "grammy";
+import { Bot, Context, GrammyError, HttpError } from "grammy";
 import { BiliArchiver } from "./api.js";
 import * as MARKUP from "./markup.js";
 import { isAdmin, addAdmin, removeAdmin, listAdmins } from "./admin.ts";
@@ -12,6 +12,7 @@ import { autoQuote } from "@roziscoding/grammy-autoquote";
 import { autoRetry } from "@grammyjs/auto-retry";
 import { handleBiliLink } from "./utils.js";
 
+// setup bot and api
 const token = env.BILIARCHIVER_BOT;
 if (!token) {
   console.error("\x1b[31mBOT_TOKEN must be provided!\x1b[0m");
@@ -80,12 +81,12 @@ bot.command("admin", (ctx) =>
 );
 
 bot.command("bili", async (ctx) => {
-  await handleBiliLink(ctx);
+  await handleBiliLink(ctx, true);
 });
 bot.hears(
   /(BV[a-zA-Z0-9]+)|(av\d+)|(bili2233.cn|b23\.(tv|wtf))\/\S+|www\.bilibili\.com\/(video|medialist|list)\/\S+|space\.bilibili\.com\/\d+/i,
   async (ctx) => {
-    await handleBiliLink(ctx);
+    await handleBiliLink(ctx, false);
   }
 );
 

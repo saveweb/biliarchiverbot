@@ -8,6 +8,7 @@ const BASE = 58n;
 
 const data = 'FcwAPNKTMug3GV5Lj7EJnHpWsx4tb8haYeviqBz6rkCy12mUSDQX9RdoZf';
 
+/** @type { (aid: string | number) => string } */
 export function av2bv(aid) {
   const bytes = ['B', 'V', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
   let bvIndex = bytes.length - 1;
@@ -22,6 +23,7 @@ export function av2bv(aid) {
   return bytes.join('');
 }
 
+/** @type { (bvid: string) => number } */
 export function bv2av(bvid) {
   const bvidArr = Array.from(bvid);
   [bvidArr[3], bvidArr[9]] = [bvidArr[9], bvidArr[3]];
