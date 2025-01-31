@@ -15,21 +15,22 @@ if (!apiBase) {
 const api = new BiliArchiver(new URL(apiBase));
 
 const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
-
-  if (ctx.from && isBlacklisted(ctx.from.id) || ctx.chat && isBlacklisted(ctx.chat.id)) {
+  if (
+    (ctx.from && isBlacklisted(ctx.from.id)) ||
+    (ctx.chat && isBlacklisted(ctx.chat.id))
+  ) {
     const Admins = listAdmins();
     const adminMentions = Admins.map(
       (id) => `[${id}](tg://user?id=${id})`
     ).join("; ");
     await ctx.reply(
       `You have been blacklisted from using this bot\\, ` +
-      `If you think this is a mistake\\, please contact admins: ` +
-      adminMentions,
+        `If you think this is a mistake\\, please contact admins: ` +
+        adminMentions,
       { parse_mode: "MarkdownV2" }
     );
     return;
   }
-
 
   const { message, chat } = ctx;
   if (!message || !chat) return;
@@ -63,7 +64,8 @@ const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
   // handle BVid
   const bv = new Bvid(matches[0]);
 
-  { // log found
+  {
+    // log found
     const { from } = ctx;
     const user = from?.username ?? from?.first_name ?? from?.id?.toString();
     console.log("Found", {
@@ -71,7 +73,7 @@ const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
       chatType: chat.type ?? "unknown",
       fromUser: user ?? "unknown",
       text: originalText ?? "no text",
-      replyText: replyToText ?? "no text"
+      replyText: replyToText ?? "no text",
     });
   }
 
@@ -159,18 +161,23 @@ const source_to_name = (source_type: string) => {
  * @example [BVxxxx](https://www.bilibili.com/video/BVxxxx)
  *          [favlist mlxxxx](https://www.bilibili.com/list/mlxxxx) */
 const source_to_markdown_link = (source_type: string, source_id: string) =>
-  `[${source_to_name(source_type)} ${source_id}](${source_to_link(source_type, source_id)})`;
+  `[${source_to_name(source_type)} ${source_id}](${source_to_link(
+    source_type,
+    source_id
+  )})`;
 
 type BvidMethods = {
   [Key in keyof Bvid as Bvid[Key] extends Function ? Key : never]: Bvid[Key];
 };
 
 const matchSource = (ctx: Context, text: string) => {
-
   // season
   // https://space.bilibili.com/38505812/channel/collectiondetail?sid=518558 518558
   // https://space.bilibili.com/228147/favlist?fid=157228&ftype=collect&ctype=21 157228
-  const seasonmatches = /\/collectiondetail\?sid=(\d+)|\/favlist\?fid=(\d+)&ftype=collect&ctype=21/.exec(text);
+  const seasonmatches =
+    /\/collectiondetail\?sid=(\d+)|\/favlist\?fid=(\d+)&ftype=collect&ctype=21/.exec(
+      text
+    );
   if (seasonmatches) {
     console.info(seasonmatches);
     console.info("Season matches", seasonmatches[1] || seasonmatches[2]);
@@ -182,7 +189,9 @@ const matchSource = (ctx: Context, text: string) => {
   // https://www.bilibili.com/medialist/play/ml480798947
   // https://www.bilibili.com/list/ml480798947
   // https://space.bilibili.com/365743248/favlist?fid=2927461681&ftype=collect&ctype=11
-  const listmatches = /\/(play|list|detail)\/ml(\d+)|\/favlist\?fid=(\d+)/.exec(text);
+  const listmatches = /\/(play|list|detail)\/ml(\d+)|\/favlist\?fid=(\d+)/.exec(
+    text
+  );
   if (listmatches) {
     console.info("List matches", listmatches[2] || listmatches[3]);
     handle_source(ctx, "favlist", listmatches[2] || listmatches[3]);
@@ -192,7 +201,10 @@ const matchSource = (ctx: Context, text: string) => {
   // series
   // https://www.bilibili.com/list/617813050?sid=518558&desc=1 518558
   // https://space.bilibili.com/617813050/channel/seriesdetail?sid=518558&ctype=0 518558 yes
-  const seriesmatches = /\/list\/(\d+)\?sid=(\d+)|com\/(\d+)\/channel\/seriesdetail\?sid=(\d+)/.exec(text);
+  const seriesmatches =
+    /\/list\/(\d+)\?sid=(\d+)|com\/(\d+)\/channel\/seriesdetail\?sid=(\d+)/.exec(
+      text
+    );
   if (seriesmatches) {
     console.info("Series matches", seriesmatches[2] || seriesmatches[4]);
     handle_source(ctx, "series", seriesmatches[2] || seriesmatches[4]);
@@ -208,11 +220,13 @@ const matchSource = (ctx: Context, text: string) => {
     handle_source(ctx, "up_videos", uidmatches[1] || uidmatches[2]);
     return;
   }
-
 };
 
-const handle_source = async (ctx: Context, source_type: string, source_id: string) => {
-
+const handle_source = async (
+  ctx: Context,
+  source_type: string,
+  source_id: string
+) => {
   const { message, chat } = ctx;
   if (!message || !chat) return;
 
@@ -231,10 +245,11 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
 
   let bvids = await api.add_from_source(source_type, source_id);
   let allow_all_chat_id: number[] = [];
-  if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === 'number') {
+  if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === "number") {
     allow_all_chat_id = [env.BILIARCHIVER_ALLOW_ALL_CHAT_ID];
-  } else if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === 'string') {
-    allow_all_chat_id = env.BILIARCHIVER_ALLOW_ALL_CHAT_ID.split(',').map(Number);
+  } else if (typeof env.BILIARCHIVER_ALLOW_ALL_CHAT_ID === "string") {
+    allow_all_chat_id =
+      env.BILIARCHIVER_ALLOW_ALL_CHAT_ID.split(",").map(Number);
   }
 
   if (chat_id !== 0 && !allow_all_chat_id.includes(chat_id)) {
@@ -249,26 +264,27 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   let processedCount = 0;
   let newlyDoneCount = 0;
   let newBvids: string[] = [];
-  let lastMessageText = '';
+  let lastMessageText = "";
   let lastOptions: any = {};
   const progress = await api.getitems();
-  const allBvids = progress.map(item => item.bvid);
-  console.debug(`All BVIDs: ${allBvids.join(', ')}`);
+  const allBvids = progress.map((item) => item.bvid);
+  console.debug(`All BVIDs: ${allBvids.join(", ")}`);
 
-  const unprocessedBvids = bvids.filter(bvid => !allBvids.includes(bvid));
-  console.debug(`Unprocessed BVIDs: ${unprocessedBvids.join(', ')}`);
+  const unprocessedBvids = bvids.filter((bvid) => !allBvids.includes(bvid));
+  console.debug(`Unprocessed BVIDs: ${unprocessedBvids.join(", ")}`);
   processingCount = bvids.length - unprocessedBvids.length; // 正在后台处理的BVID数量
   console.debug(`Processing BVIDs: ${bvids.length - unprocessedBvids.length}`);
-  newBvids = bvids.filter(bvid => !unprocessedBvids.includes(bvid));
+  newBvids = bvids.filter((bvid) => !unprocessedBvids.includes(bvid));
 
   const updateStatus = async () => {
     try {
-      const messageText = `Processing ${source_to_markdown_link(source_type, source_id)}\n` +
+      const messageText =
+        `Processing ${source_to_markdown_link(source_type, source_id)}\n` +
         `Total: ${bvids.length}\n` +
-        `${existingCount > 0 ? `Archived: ${existingCount}\n` : ''}` +
-        `${newCount > 0 ? `Nonexist: ${newCount}\n` : ''}` +
-        `${processingCount > 0 ? `Added before: ${processingCount}\n` : ''}` +
-        `${processedCount > 0 ? `Added now: ${processedCount}\n` : ''}`;
+        `${existingCount > 0 ? `Archived: ${existingCount}\n` : ""}` +
+        `${newCount > 0 ? `Nonexist: ${newCount}\n` : ""}` +
+        `${processingCount > 0 ? `Added before: ${processingCount}\n` : ""}` +
+        `${processedCount > 0 ? `Added now: ${processedCount}\n` : ""}`;
 
       let options: any = { parse_mode: "MarkdownV2" };
       if (newCount > 0) {
@@ -304,7 +320,7 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
     const batch = unprocessedBvids.slice(i, i + BATCH_SIZE);
 
     const results = await Promise.all(
-      batch.map(bvid => api.check(new Bvid(bvid)))
+      batch.map((bvid) => api.check(new Bvid(bvid)))
     );
 
     for (let j = 0; j < results.length; j++) {
@@ -335,9 +351,12 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
     await ctx.api.editMessageText(
       chat_id,
       statusMessageId,
-      `Processed all ${bvids.length} items from ${source_to_markdown_link(source_type, source_id)}\n` +
-      `${bvids.length} items already existed\\.\n` +
-      `No new items found\\.`,
+      `Processed all ${bvids.length} items from ${source_to_markdown_link(
+        source_type,
+        source_id
+      )}\n` +
+        `${bvids.length} items already existed\\.\n` +
+        `No new items found\\.`,
       { parse_mode: "MarkdownV2" }
     );
     return;
@@ -346,11 +365,14 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   await ctx.api.editMessageText(
     chat_id,
     statusMessageId,
-    `Processed all ${bvids.length} items from source ${source_to_markdown_link(source_type, source_id)}\n` +
-    `${bvids.length - newBvids.length} items already existed\n` +
-    `Added ${newBvids.length} new items\n` +
-    `Now monitoring new archives`,
-    { reply_markup , parse_mode: "MarkdownV2" }
+    `Processed all ${bvids.length} items from source ${source_to_markdown_link(
+      source_type,
+      source_id
+    )}\n` +
+      `${bvids.length - newBvids.length} items already existed\n` +
+      `Added ${newBvids.length} new items\n` +
+      `Now monitoring new archives`,
+    { reply_markup, parse_mode: "MarkdownV2" }
   );
 
   let remainingBvids = newBvids.slice();
@@ -358,11 +380,10 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
   let checked_turns = 0;
 
   const checkArchives = async () => {
-
     /** Format `completedBvids` into a list of markdown links */
     const format_bvids = (bvids: string[], method: keyof BvidMethods) => {
       const format = (bvids: string[]) =>
-        bvids.map(bvid => new Bvid(bvid)[method]()).join(', ');
+        bvids.map((bvid) => new Bvid(bvid)[method]()).join(", ");
       return bvids.length <= 5
         ? `${format(bvids)}\n`
         : `${format(bvids.slice(0, 5))} and ${bvids.length - 5} more`;
@@ -372,49 +393,66 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
      * @example Total: 4
      *          Archived: 2
      *          Nonexist: 1 */
-    const getProgressText =
-      (bvidCount: number, existingCount: number, newCount: number) =>
-        `Total: ${bvidCount}\n` +
-        `${existingCount > 0 ? `Archived: ${existingCount}\n` : ''}` +
-        `${newCount > 0 ? `Nonexist: ${newCount}\n` : ''}`;
+    const getProgressText = (
+      bvidCount: number,
+      existingCount: number,
+      newCount: number
+    ) =>
+      `Total: ${bvidCount}\n` +
+      `${existingCount > 0 ? `Archived: ${existingCount}\n` : ""}` +
+      `${newCount > 0 ? `Nonexist: ${newCount}\n` : ""}`;
 
     let newlyCompleted = [];
     const progress = await api.getitems();
-    let allCompleted = progress.filter(item => item.status === 'finished').map(item => item.bvid);
-    newlyCompleted = allCompleted.filter(bvid => remainingBvids.includes(bvid));
+    let allCompleted = progress
+      .filter((item) => item.status === "finished")
+      .map((item) => item.bvid);
+    newlyCompleted = allCompleted.filter((bvid) =>
+      remainingBvids.includes(bvid)
+    );
     if (newlyCompleted.length > 0) {
-      console.debug(`Archive of ${newlyCompleted.length} BVIDs completed: ${newlyCompleted.join(', ')}`);
+      console.debug(
+        `Archive of ${
+          newlyCompleted.length
+        } BVIDs completed: ${newlyCompleted.join(", ")}`
+      );
     }
-    remainingBvids = remainingBvids.filter(bvid => !newlyCompleted.includes(bvid));
+    remainingBvids = remainingBvids.filter(
+      (bvid) => !newlyCompleted.includes(bvid)
+    );
     completedBvids.push(...newlyCompleted);
     newlyDoneCount += newlyCompleted.length;
-    let progressText = '';
+    let progressText = "";
     if (remainingBvids.length === 0) {
       await ctx.reply(`All items have been processed.`);
       return;
     } else {
-      const messageText = 
+      const messageText =
         `Processing ${source_to_markdown_link(source_type, source_id)}\n` +
         getProgressText(bvids.length, existingCount, newCount) +
-        (remainingBvids.length > 0 ?
-          `Archiving: ${remainingBvids.length}\n` +
-          `Bili links: ${format_bvids(remainingBvids, "toMarkdownBilibiliLink")}\n`
-          : '') +
-        (newlyDoneCount > 0 ?
-          `Newly done: ${newlyDoneCount}\n` +
-          `Archive links: ${format_bvids(remainingBvids, "toMarkdownArchiveLink")}\n`
-          : '') +
+        (remainingBvids.length > 0
+          ? `Archiving: ${remainingBvids.length}\n` +
+            `Bili links: ${format_bvids(
+              remainingBvids,
+              "toMarkdownBilibiliLink"
+            )}\n`
+          : "") +
+        (newlyDoneCount > 0
+          ? `Newly done: ${newlyDoneCount}\n` +
+            `Archive links: ${format_bvids(
+              remainingBvids,
+              "toMarkdownArchiveLink"
+            )}\n`
+          : "") +
         `Check turn: ${checked_turns}\\. Checking in 20 minutes`;
 
       if (messageText === progressText) {
         return;
       } else {
-        await ctx.api.editMessageText(
-          chat_id,
-          statusMessageId,
-          messageText,
-          { reply_markup , parse_mode: "MarkdownV2" }
-        );
+        await ctx.api.editMessageText(chat_id, statusMessageId, messageText, {
+          reply_markup,
+          parse_mode: "MarkdownV2",
+        });
         progressText = messageText;
       }
     }
@@ -427,34 +465,35 @@ const handle_source = async (ctx: Context, source_type: string, source_id: strin
       let messagePrefix =
         `Processed ${source_to_markdown_link(source_type, source_id)}\n` +
         getProgressText(bvids.length, existingCount, newCount) +
-        (newlyDoneCount > 0 ?
-          `Newly done: ${newlyDoneCount}\n` +
-          `Archive links: ${format_bvids(remainingBvids, "toMarkdownArchiveLink")}\n`
-          : '');
+        (newlyDoneCount > 0
+          ? `Newly done: ${newlyDoneCount}\n` +
+            `Archive links: ${format_bvids(
+              remainingBvids,
+              "toMarkdownArchiveLink"
+            )}\n`
+          : "");
 
       if (remainingBvids.length === 0) {
         const message =
-          messagePrefix + `Check turn: ${checked_turns}\\. Checking in 20 minutes`;
+          messagePrefix +
+          `Check turn: ${checked_turns}\\. Checking in 20 minutes`;
 
-        await ctx.api.editMessageText(
-          chat_id,
-          statusMessageId,
-          message,
-          {  parse_mode: "MarkdownV2" }
-        );
-      } else { // checked_turns >= 600
+        await ctx.api.editMessageText(chat_id, statusMessageId, message, {
+          parse_mode: "MarkdownV2",
+        });
+      } else {
+        // checked_turns >= 600
         const message =
-          messagePrefix + `Check turn: ${checked_turns}\\. ` +
+          messagePrefix +
+          `Check turn: ${checked_turns}\\. ` +
           `Some items have not been processed yet, they are: ` +
           `${format_bvids(remainingBvids, "toMarkdownBilibiliLink")}\n` +
           `Click the botton below to check the status of these items.`;
 
-        await ctx.api.editMessageText(
-          chat_id,
-          statusMessageId,
-          message,
-          { parse_mode: "MarkdownV2", reply_markup }
-        );
+        await ctx.api.editMessageText(chat_id, statusMessageId, message, {
+          parse_mode: "MarkdownV2",
+          reply_markup,
+        });
       }
       return;
     }
