@@ -4,6 +4,8 @@ import resolveB23 from "./b23.js";
 import * as MARKUP from "./markup.js";
 import { BiliArchiver } from "./api.js";
 import { env } from "$env/dynamic/private";
+import { isBlacklisted } from "./blacklist.js";
+import { listAdmins } from "./admin.js";
 
 const apiBase = env.BILIARCHIVER_API;
 if (!apiBase) {
@@ -12,6 +14,23 @@ if (!apiBase) {
 const api = new BiliArchiver(new URL(apiBase));
 
 const handleBiliLink = async (ctx: Context) => {
+  // Add blacklist check at the start
+  if (env.BILIARCHIVER_ENABLE_BLACKLIST === "true") {
+    if (ctx.from && isBlacklisted(ctx.from.id) || ctx.chat && isBlacklisted(ctx.chat.id)) {
+      const Admins = listAdmins();
+      const adminMentions = Admins.map(
+        (id) => `[${id}](tg://user?id=${id})`
+      ).join("; ");
+      await ctx.reply(
+        `You have been blacklisted from using this bot\\, ` +
+        `If you think this is a mistake\\, please contact admins: ` +
+        adminMentions,
+        { parse_mode: "MarkdownV2" }
+      );
+      return;
+    }
+  }
+
   if (!ctx.message) {
     return;
   }
