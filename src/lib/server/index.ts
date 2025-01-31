@@ -3,7 +3,6 @@ import { BiliArchiver } from "./api.js";
 import * as MARKUP from "./markup.js";
 import { isAdmin, addAdmin, removeAdmin, listAdmins } from "./admin.ts";
 import {
-  isBlacklisted,
   addToBlacklist,
   removeFromBlacklist,
   listBlacklist,
@@ -19,8 +18,13 @@ if (!token) {
   console.error("\x1b[31mBOT_TOKEN must be provided!\x1b[0m");
 }
 const bot = new Bot(token!);
-bot.use(autoQuote());
-bot.api.config.use(autoRetry());
+bot.use(autoQuote({ allowSendingWithoutReply: true }));
+bot.api.config.use(
+  autoRetry({
+    maxRetryAttempts: 1,
+    maxDelaySeconds: 5,
+  })
+);
 const apiBase = env.BILIARCHIVER_API;
 if (!apiBase) {
   throw new Error("\x1b[31mBILIARCHIVER_API must be provided!\x1b[0m");
@@ -30,8 +34,8 @@ const api = new BiliArchiver(new URL(apiBase));
 bot.command("start", (ctx) =>
   ctx.reply(
     "请发送B站视频链接以存档 | Send a Bilibili video link to archive\n" +
-    "🤖 BiliArchiver Bot 使用说明 | Usage Guide\n" +
-    "请使用 /help 查看使用说明 | Use /help to view the usage guide",
+      "🤖 BiliArchiver Bot 使用说明 | Usage Guide\n" +
+      "请使用 /help 查看使用说明 | Use /help to view the usage guide",
     {
       parse_mode: "HTML",
     }
@@ -41,21 +45,21 @@ bot.command("start", (ctx) =>
 bot.command("help", (ctx) =>
   ctx.reply(
     "🤖 BiliArchiver Bot 使用说明 | Usage Guide\n\n" +
-    "<b>基础命令 | Basic Commands:</b>\n" +
-    "• 直接发送B站视频链接/视频号 | Send Bilibili video link/BV or av number\n" +
-    "• <code>/help</code> - 显示说明 | Show usage guide\n" +
-    "• <code>/bili</code> - 存档视频 | Archive video\n" +
-    "• <code>/bilist</code> - 查看队列 | Show queue\n" +
-    "<b>支持的链接类型 | Supported Links:</b>\n" +
-    "• BV号/av号视频 | BVxxxxxx or avxxxxxx\n" +
-    "• 视频合集 | Series playlist\n" +
-    "• 收藏夹 | Favorites list\n" +
-    "• UP主投稿 | User uploads\n" +
-    "• b23.tv短链接 | Short links\n" +
-    "<b>其他 | Others:</b>\n" +
-    "• 强烈推荐自行部署 | Highly recommend self-hosting\n" +
-    "• 请勿滥用 | Do not abuse • 交流反馈 | <a href='https://t.me/saveweb_projects/208'>Telegram Group</a>\n" +
-    "• TG端源码 | <a href='https://github.com/saveweb/biliarchiverbot'>TG GitHub</a> • 后端源码 | <a href='https://github.com/saveweb/biliarchiver'>Backend GitHub</a>",
+      "<b>基础命令 | Basic Commands:</b>\n" +
+      "• 直接发送B站视频链接/视频号 | Send Bilibili video link/BV or av number\n" +
+      "• <code>/help</code> - 显示说明 | Show usage guide\n" +
+      "• <code>/bili</code> - 存档视频 | Archive video\n" +
+      "• <code>/bilist</code> - 查看队列 | Show queue\n" +
+      "<b>支持的链接类型 | Supported Links:</b>\n" +
+      "• BV号/av号视频 | BVxxxxxx or avxxxxxx\n" +
+      "• 视频合集 | Series playlist\n" +
+      "• 收藏夹 | Favorites list\n" +
+      "• UP主投稿 | User uploads\n" +
+      "• b23.tv短链接 | Short links\n" +
+      "<b>其他 | Others:</b>\n" +
+      "• 强烈推荐自行部署 | Highly recommend self-hosting\n" +
+      "• 请勿滥用 | Do not abuse • 交流反馈 | <a href='https://t.me/saveweb_projects/208'>Telegram Group</a>\n" +
+      "• TG端源码 | <a href='https://github.com/saveweb/biliarchiverbot'>TG GitHub</a> • 后端源码 | <a href='https://github.com/saveweb/biliarchiver'>Backend GitHub</a>",
     {
       parse_mode: "HTML",
       link_preview_options: { is_disabled: true },
@@ -66,35 +70,15 @@ bot.command("help", (ctx) =>
 bot.command("admin", (ctx) =>
   ctx.reply(
     "<b>管理员命令 | Admin Commands:</b>\n" +
-    "• <code>/addadmin</code> [用户ID | user_id]\n" +
-    "• <code>/removeadmin</code> [用户ID | user_id]\n" +
-    "• <code>/blacklist</code> [用户ID | user_id]\n" +
-    "• <code>/unblacklist</code> [用户ID | user_id]\n\n",
+      "• <code>/addadmin</code> [用户ID | user_id]\n" +
+      "• <code>/removeadmin</code> [用户ID | user_id]\n" +
+      "• <code>/blacklist</code> [用户ID | user_id]\n" +
+      "• <code>/unblacklist</code> [用户ID | user_id]\n\n",
     {
       parse_mode: "HTML",
     }
   )
 );
-
-bot.use(async (ctx, next) => {
-  if (env.BILIARCHIVER_ENABLE_BLACKLIST !== "true") {
-    return next();
-  }
-  if (ctx.from && isBlacklisted(ctx.from.id)) {
-    const Admins = listAdmins();
-    const adminMentions = Admins.map(
-      (id) => `[${id}](tg://user?id=${id})`
-    ).join("; ");
-    await ctx.reply(
-      `You have been blacklisted from using this bot, ` +
-        `If you think this is a mistake, please contact admins: ` +
-        adminMentions,
-      { parse_mode: "MarkdownV2" }
-    );
-    return;
-  }
-  return next();
-});
 
 bot.command("bili", async (ctx) => {
   await handleBiliLink(ctx, true);
@@ -177,10 +161,9 @@ bot.command("removeadmin", (ctx) =>
 bot.command("listadmins", async (ctx) => {
   const Admins = listAdmins();
   const adminMentions = Admins.map((id) => `[${id}](tg://user?id=${id})`);
-  await ctx.reply(
-    `Admins: ${adminMentions.join("; ")}`,
-    { parse_mode: "MarkdownV2" }
-  );
+  await ctx.reply(`Admins: ${adminMentions.join("; ")}`, {
+    parse_mode: "MarkdownV2",
+  });
 });
 
 bot.command("blacklist", async (ctx) =>
@@ -204,10 +187,9 @@ bot.command("listblacklist", async (ctx) => {
   const blacklistMentions = blacklist.map(
     (id) => `[${id}](tg://user?id=${id})`
   );
-  await ctx.reply(
-    `Blacklisted users: ${blacklistMentions.join("; ")}`,
-    { parse_mode: "MarkdownV2" }
-  );
+  await ctx.reply(`Blacklisted users: ${blacklistMentions.join("; ")}`, {
+    parse_mode: "MarkdownV2",
+  });
 });
 
 bot.catch((err) => {
