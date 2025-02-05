@@ -66,15 +66,29 @@
           <span>{items[index].status === "finished" ? "✅" : "❌"}</span>
         </div>
         <div class="cover">
-          <a href={items[index].link}>
-            <img src={items[index].cover} alt="cover" loading="lazy" />
-            <img
-              class="hover-icon"
-              src="ia-logo.svg"
-              alt="Play on Internet Archive"
-              width="70px"
-            />
-          </a>
+          {#if items[index].status === 'finished'}
+            <a href={items[index].link}>
+              <img src={items[index].cover} alt="cover" loading="lazy" />
+              <img
+                class="hover-icon"
+                src="ia-logo.svg"
+                alt="Play on Internet Archive"
+                width="70px"
+              />
+            </a>
+          {:else}
+            <iframe
+              src="//player.bilibili.com/player.html?bvid={items[index].bvid}&autoplay=0"
+              scrolling="no"
+              border="0"
+              frameborder="no"
+              framespacing="0"
+              allowfullscreen="true"
+              width="320"
+              height="180"
+              title="Bilibili Player"
+            ></iframe>
+          {/if}
         </div>
       </li>
     </List>
@@ -148,6 +162,12 @@
     filter: brightness(0.9) blur(0) grayscale(0.5) hue-rotate(-10deg);
     transform: scale(0.96);
   }
+  .cover {
+    width: 320px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .cover a {
     position: relative;
     user-select: none;
@@ -195,5 +215,9 @@
 
   * {
     overflow: hidden !important;
+  }
+
+  iframe {
+    border-radius: 6px;
   }
 </style>
