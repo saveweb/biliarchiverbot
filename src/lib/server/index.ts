@@ -134,7 +134,17 @@ const handleAdminCommand = async (
   const senderId = ctx.from?.id;
   if (!senderId) return;
 
-  const targetId = Number(ctx.match);
+  let targetId = 0;
+  if (!ctx.message?.text) {
+    targetId = Number(ctx.match);
+  } else {
+    const parts = ctx.message?.text.split(" ");
+    targetId = 0;
+    if (parts && parts.length > 1) {
+      targetId = Number(parts[1]);
+    }
+  }
+
   if (!isAdmin(senderId)) {
     if (action === addAdmin && listAdmins().length === 0) {
       addAdmin(senderId);
