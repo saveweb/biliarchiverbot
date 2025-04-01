@@ -68,29 +68,41 @@ const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
     // log found
     const { from } = ctx;
     const user = from?.username ?? from?.first_name ?? from?.id?.toString();
+    console.log(JSON.stringify(ctx.message, null, 2));
     const logData = {
-      chatId: chat.id ?? "unknown",
-      chatType: chat.type ?? "unknown",
-      fromUser: user ?? "unknown",
-      text: originalText ?? "no text",
-      replyText: replyToText ?? "no text",
+      message_id: message.message_id,
+      bvid: bv,
+      chatId: chat.id,
+      chatType: chat.type,
+      fromUser: user,
+      UserId: from?.id,
+      UserName: from?.username,
+      text: originalText,
+      replyText: replyToText,
     };
-    console.info("Found", logData);
+    console.info("Archive log:", JSON.stringify(logData, null, 2));
 
     if (env.BILIARCHIVER_LOG_INTO_CHAT_ID) {
       const logChatId = Number(env.BILIARCHIVER_LOG_INTO_CHAT_ID);
 
       const logMessage =
-        `<b>✅ Archive Request Received</b>` +
-        `\n-------------------------` +
-        `\n<b>Chat Type:</b> <code>${logData.chatType}</code>` +
-        `<a href="tg://user?id=${logData.chatId}">From</a>` +
-        `<b>User:</b> ${escapeHtml(logData.fromUser)}` +
-        `<b>BiliLink:</b> <a href="https://www.bilibili.com/video/${bv}">${bv}</a>` +
-        `<b>Original Text:</b>` +
-        `<pre>${escapeHtml(logData.text)}</pre>`;
+        `<a href="https://www.bilibili.com/video/${bv}">✅</a> From User ` +
+        `<a href="tg://user?id=${logData.UserId}">` +
+        `${
+          logData.UserName
+            ? "@" + escapeHtml(logData.UserName)
+            : logData.fromUser
+        }` +
+        `</a>`;
 
-      const options: any = { parse_mode: "HTML" };
+      const options: any = {
+        parse_mode: "HTML",
+        LinkPreviewOptions: {
+          is_disabled: false,
+          prefer_small_media: true,
+        },
+      };
+
       if (env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC) {
         try {
           options.message_thread_id = Number(
