@@ -95,6 +95,8 @@ If you don't have public IP, you can use [ngrok](https://ngrok.com/) to expose y
 
 ## Manage
 
+Please checkout `/admin` command for more information. 
+
 ### Admin Management
 The first user to run `/addadmin` becomes the admin. After that, only admins can add new admins using:
 ```shell
