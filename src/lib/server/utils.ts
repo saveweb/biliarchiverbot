@@ -576,7 +576,8 @@ const BlockedMessage = () => {
   return (
     `You have been blacklisted from using this bot\\, ` +
     `If you think this is a mistake\\, please contact admins: ` +
-    adminMentions
+    adminMentions +
+    `\nFor more infomation, please run /help command\\.`
   );
 };
 
