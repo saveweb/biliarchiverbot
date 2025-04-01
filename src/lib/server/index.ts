@@ -176,11 +176,17 @@ bot.command("blacklist", async (ctx) =>
     (id) => `User ${id} has been blacklisted.`
   )
   .then(async () => {
-    await ctx.api.sendMessage(
-      parseTargetId(ctx),
-      BlockedMessage(),
-      { parse_mode: "MarkdownV2" }
-    );
+    try {
+      await ctx.api.sendMessage(
+        parseTargetId(ctx),
+        BlockedMessage(),
+        { parse_mode: "MarkdownV2" }
+      );
+    } catch (e) {
+      await ctx.reply(
+        "The user is nolonger reachable."
+      );
+    }
   })
 );
 
