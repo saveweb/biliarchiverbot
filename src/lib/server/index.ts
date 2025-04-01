@@ -197,7 +197,7 @@ bot.command("unblacklist", async (ctx) =>
 bot.command("listblacklist", async (ctx) => {
   const blacklist = listBlacklist();
   const blacklistMentions = blacklist.map(
-    (id) => `<a href="tg://user?id=${id}">${id}</a>`
+    (id) => `<br><a href="tg://user?id=${id}">${id}</a>`
   );
   await ctx.reply(`Blacklisted users: ${blacklistMentions.join("; ")}`, {
     parse_mode: "HTML",
