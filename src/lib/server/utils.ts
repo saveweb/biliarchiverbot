@@ -82,8 +82,8 @@ const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
 
       const logMessage =
         `<b>✅ Archive Request Received</b>` +
-        `<br>-------------------------` +
-        `<br><b>Chat Type:</b> <code>${logData.chatType}</code>` +
+        `\n-------------------------` +
+        `\n<b>Chat Type:</b> <code>${logData.chatType}</code>` +
         `<a href="tg://user?id=${logData.chatId}">From</a>` +
         `<b>User:</b> ${escapeHtml(logData.fromUser)}` +
         `<b>BiliLink:</b> <a href="https://www.bilibili.com/video/${bv}">${bv}</a>` +
