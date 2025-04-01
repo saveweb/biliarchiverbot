@@ -10,7 +10,7 @@ import {
 import { env } from "$env/dynamic/private";
 import { autoQuote } from "@roziscoding/grammy-autoquote";
 import { autoRetry } from "@grammyjs/auto-retry";
-import { handleBiliLink } from "./utils.js";
+import { handleBiliLink, BlockedMessage, parseTargetId } from "./utils.js";
 
 // setup bot and api
 const token = env.BILIARCHIVER_BOT;
@@ -134,16 +134,7 @@ const handleAdminCommand = async (
   const senderId = ctx.from?.id;
   if (!senderId) return;
 
-  let targetId = 0;
-  if (!ctx.message?.text) {
-    targetId = Number(ctx.match);
-  } else {
-    const parts = ctx.message?.text.split(" ");
-    targetId = 0;
-    if (parts && parts.length > 1) {
-      targetId = Number(parts[1]);
-    }
-  }
+  const targetId = parseTargetId(ctx);
 
   if (!isAdmin(senderId)) {
     if (action === addAdmin && listAdmins().length === 0) {
@@ -184,6 +175,13 @@ bot.command("blacklist", async (ctx) =>
     addToBlacklist,
     (id) => `User ${id} has been blacklisted.`
   )
+  .then(async () => {
+    await ctx.api.sendMessage(
+      parseTargetId(ctx),
+      BlockedMessage(),
+      { parse_mode: "MarkdownV2" }
+    );
+  })
 );
 
 bot.command("unblacklist", async (ctx) =>

@@ -15,22 +15,7 @@ if (!apiBase) {
 const api = new BiliArchiver(new URL(apiBase));
 
 const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
-  if (
-    (ctx.from && isBlacklisted(ctx.from.id)) ||
-    (ctx.chat && isBlacklisted(ctx.chat.id))
-  ) {
-    const Admins = listAdmins();
-    const adminMentions = Admins.map(
-      (id) => `[${id}](tg://user?id=${id})`
-    ).join("; ");
-    await ctx.reply(
-      `You have been blacklisted from using this bot\\, ` +
-        `If you think this is a mistake\\, please contact admins: ` +
-        adminMentions,
-      { parse_mode: "MarkdownV2" }
-    );
-    return;
-  }
+  if (await isUserBlacklisted(ctx)) return;
 
   const { message, chat } = ctx;
   if (!message || !chat) return;
@@ -565,4 +550,49 @@ function escapeHtml(unsafe: string | undefined | null): string {
     .replace(/>/g, "&gt;");
 }
 
-export { handleBiliLink };
+const isUserBlacklisted = async (ctx: Context): Promise<boolean> => {
+  if (
+    (ctx.from && isBlacklisted(ctx.from.id)) ||
+    (ctx.chat && isBlacklisted(ctx.chat.id))
+  ) {
+    await sendBlockedMessage(ctx);
+    console.log(
+      `User ${ctx.from?.id} is blacklisted, message: ${ctx.message?.text}`
+    );
+    return true;
+  }
+  return false;
+};
+
+const sendBlockedMessage = async (ctx: Context) => {
+  await ctx.reply(BlockedMessage(), { parse_mode: "MarkdownV2" });
+};
+
+const BlockedMessage = () => {
+  const Admins = listAdmins();
+  const adminMentions = Admins.map((id) => `[${id}](tg://user?id=${id})`).join(
+    "; "
+  );
+  return (
+    `You have been blacklisted from using this bot\\, ` +
+    `If you think this is a mistake\\, please contact admins: ` +
+    adminMentions
+  );
+};
+
+const parseTargetId = (ctx: Context): number => {
+  if (ctx.match && Number(ctx.match)) {
+    return Number(ctx.match);
+  }
+
+  if (ctx.message?.text) {
+    const parts = ctx.message.text.split(" ");
+    if (parts.length > 1) {
+      return Number(parts[1]);
+    }
+  }
+
+  return 0;
+};
+
+export { handleBiliLink, BlockedMessage, parseTargetId };
