@@ -68,13 +68,51 @@ const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
     // log found
     const { from } = ctx;
     const user = from?.username ?? from?.first_name ?? from?.id?.toString();
-    console.log("Found", {
+    const logData = {
       chatId: chat.id ?? "unknown",
       chatType: chat.type ?? "unknown",
       fromUser: user ?? "unknown",
       text: originalText ?? "no text",
       replyText: replyToText ?? "no text",
-    });
+    };
+    console.info("Found", logData);
+
+    if (env.BILIARCHIVER_LOG_INTO_CHAT_ID) {
+      const logChatId = Number(env.BILIARCHIVER_LOG_INTO_CHAT_ID);
+
+      const logMessage =
+        `<b>✅ Archive Request Received</b>` +
+        `<br>-------------------------` +
+        `<br><b>Chat Type:</b> <code>${logData.chatType}</code>` +
+        `<a href="tg://user?id=${logData.chatId}">From</a>` +
+        `<b>User:</b> ${escapeHtml(logData.fromUser)}` +
+        `<b>BiliLink:</b> <a href="https://www.bilibili.com/video/${bv}">${bv}</a>` +
+        `<b>Original Text:</b>` +
+        `<pre>${escapeHtml(logData.text)}</pre>`;
+
+      const options: any = { parse_mode: "HTML" };
+      if (env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC) {
+        try {
+          options.message_thread_id = Number(
+            env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC
+          );
+        } catch (e) {
+          console.error(
+            "Invalid BILIARCHIVER_LOG_INTO_CHAT_TOPIC:",
+            env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC
+          );
+        }
+      }
+
+      try {
+        await ctx.api.sendMessage(logChatId, logMessage, options);
+      } catch (error) {
+        console.error(
+          `Error sending log message to chat ID ${logChatId}:`,
+          error
+        );
+      }
+    }
   }
 
   let pending: Message.TextMessage;
@@ -501,5 +539,18 @@ const handle_source = async (
 
   checkArchives();
 };
+
+/**
+ * Escapes HTML special characters to prevent formatting issues in Telegram messages.
+ * @param unsafe The string to escape.
+ * @returns The escaped string.
+ */
+function escapeHtml(unsafe: string | undefined | null): string {
+  if (!unsafe) return "N/A"; // Return 'N/A' or an empty string if input is null/undefined
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 export { handleBiliLink };

@@ -20,6 +20,8 @@ docker run -d \
   -e BILIARCHIVER_API={THE_API_URL_OF_BILIARCHIVER}\
   -e BILIARCHIVER_BOT={YOUR_BOT_TOKEN}\
   -e BILIARCHIVER_ENABLE_BLACKLIST=true\ # Optional, if you want to enable blacklist feature, don't forget to trigger /addadmin command first
+  -e BILIARCHIVER_LOG_INTO_CHAT_ID={YOUR_CHAT_ID}\ # Optional, if you want to log into a specific chat group, you can set the chat ID here.
+  -e BILIARCHIVER_LOG_INTO_CHAT_TOPIC={YOUR_CHAT_TOPIC}\ # Optional, if you want to log into a specific chat topic, you can set the topic here.
   --restart always \
   ghcr.io/saveweb/biliarchiverbot:latest
 ```
@@ -55,6 +57,8 @@ If you don't have public IP, you can use [ngrok](https://ngrok.com/) to expose y
     BILIARCHIVER_USERNAME=<THE_TELEGRAM_USERNAME_OF_BILIARCHIVER_BOT>
     BILIARCHIVER_API=<THE_API_URL_OF_BILIARCHIVER>
     BILIARCHIVER_BOT=<YOUR_BOT_TOKEN>
+    BILIARCHIVER_LOG_INTO_CHAT_ID=<YOUR_CHAT_ID> # Optional, if you want to log into a specific chat group, you can set the chat ID here.
+    BILIARCHIVER_LOG_INTO_CHAT_TOPIC=<YOUR_CHAT_TOPIC> # Optional, if you want to log into a specific chat topic, you can set the topic here.
    ```
 
 5. deploy
@@ -79,6 +83,9 @@ If you don't have public IP, you can use [ngrok](https://ngrok.com/) to expose y
     BILIARCHIVER_USERNAME=<THE_TELEGRAM_USERNAME_OF_BILIARCHIVER_BOT>
     BILIARCHIVER_API=<THE_API_URL_OF_BILIARCHIVER>
     BILIARCHIVER_BOT=<YOUR_BOT_TOKEN>
+    BILIARCHIVER_ENABLE_BLACKLIST=true # Optional, if you want to enable blacklist feature, don't forget to trigger /addadmin command first
+    BILIARCHIVER_LOG_INTO_CHAT_ID=<YOUR_CHAT_ID> # Optional, if you want to log into a specific chat group, you can set the chat ID here.
+    BILIARCHIVER_LOG_INTO_CHAT_TOPIC=<YOUR_CHAT_TOPIC> # Optional, if you want to log into a specific chat topic, you can set the topic here.
    ```
 4. start the development server
 
