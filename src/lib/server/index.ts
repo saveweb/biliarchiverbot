@@ -73,7 +73,9 @@ bot.command("admin", (ctx) =>
       "• <code>/addadmin</code> [用户ID | user_id]\n" +
       "• <code>/removeadmin</code> [用户ID | user_id]\n" +
       "• <code>/blacklist</code> [用户ID | user_id]\n" +
-      "• <code>/unblacklist</code> [用户ID | user_id]\n\n",
+      "• <code>/unblacklist</code> [用户ID | user_id]\n\n" +
+      "• <code>/listadmins</code> - 查看管理员 | Show admins\n" +
+      "• <code>/listblacklist</code> - 查看黑名单 | Show blacklist\n",
     {
       parse_mode: "HTML",
     }
