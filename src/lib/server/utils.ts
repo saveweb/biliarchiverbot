@@ -89,16 +89,9 @@ const handleBiliLink = async (ctx: Context, includeReplyTo: boolean) => {
       };
 
       if (env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC) {
-        try {
-          options.message_thread_id = Number(
-            env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC
-          );
-        } catch (e) {
-          console.error(
-            "Invalid BILIARCHIVER_LOG_INTO_CHAT_TOPIC:",
-            env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC
-          );
-        }
+        options.message_thread_id = Number(
+          env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC
+        );
       }
 
       try {
@@ -290,6 +283,50 @@ const handle_source = async (
   if (chat_id !== 0 && !allow_all_chat_id.includes(chat_id)) {
     if (bvids.length > 3) {
       bvids = bvids.slice(0, 3);
+    }
+  }
+
+  if (env.BILIARCHIVER_LOG_INTO_CHAT_ID) {
+    const logChatId = Number(env.BILIARCHIVER_LOG_INTO_CHAT_ID);
+
+    const logMessage =
+      `<a href="${source_to_link(source_type, source_id)}">` +
+      `Archive of ${source_type} id ${source_id}</a>\n` +
+      `<a href="tg://user?id=${chat_id}">` +
+      `${
+        chat.username
+          ? "@" + escapeHtml(chat.username)
+          : chat.first_name ?? chat.id?.toString()
+      }` +
+      `</a>\n` +
+      `With ${bvids.length} items:\n` +
+      bvids
+        .map((bvid) => {
+          return (
+            `<a href="https://www.bilibili.com/video/${bvid}">` + bvid + `</a>`
+          );
+        })
+        .join("、");
+
+    const options: any = {
+      parse_mode: "HTML",
+      LinkPreviewOptions: {
+        is_disabled: false,
+        prefer_small_media: true,
+      },
+    };
+
+    if (env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC) {
+      options.message_thread_id = Number(env.BILIARCHIVER_LOG_INTO_CHAT_TOPIC);
+    }
+
+    try {
+      await ctx.api.sendMessage(logChatId, logMessage, options);
+    } catch (error) {
+      console.error(
+        `Error sending log message to chat ID ${logChatId}:`,
+        error
+      );
     }
   }
 
