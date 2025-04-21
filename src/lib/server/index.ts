@@ -75,7 +75,8 @@ bot.command("admin", (ctx) =>
       "• <code>/blacklist</code> [用户ID | user_id]\n" +
       "• <code>/unblacklist</code> [用户ID | user_id]\n\n" +
       "• <code>/listadmins</code> - 查看管理员 | Show admins\n" +
-      "• <code>/listblacklist</code> - 查看黑名单 | Show blacklist\n",
+      "• <code>/listblacklist</code> - 查看黑名单 | Show blacklist\n\n" +
+      "• <code>/message</code> [用户ID | user_id] [消息 | message]\n",
     {
       parse_mode: "HTML",
     }
@@ -174,18 +175,13 @@ bot.command("blacklist", async (ctx) =>
     ctx,
     addToBlacklist,
     (id) => `User ${id} has been blacklisted.`
-  )
-  .then(async () => {
+  ).then(async () => {
     try {
-      await ctx.api.sendMessage(
-        parseTargetId(ctx),
-        BlockedMessage(),
-        { parse_mode: "MarkdownV2" }
-      );
+      await ctx.api.sendMessage(parseTargetId(ctx), BlockedMessage(), {
+        parse_mode: "MarkdownV2",
+      });
     } catch (e) {
-      await ctx.reply(
-        "The user is nolonger reachable."
-      );
+      await ctx.reply("The user is nolonger reachable.");
     }
   })
 );
@@ -206,6 +202,35 @@ bot.command("listblacklist", async (ctx) => {
   await ctx.reply(`Blacklisted users: ${blacklistMentions.join("; ")}`, {
     parse_mode: "HTML",
   });
+});
+
+bot.command("message", async (ctx) => {
+  const senderId = ctx.from?.id;
+  if (!senderId || !isAdmin(senderId)) {
+    await ctx.reply("You are not authorized to use this command.");
+    return;
+  }
+  const parts = ctx.message?.text?.split(" ");
+  if (!parts || parts.length < 3) {
+    await ctx.reply("Usage: /message <user_id> <message>");
+    return;
+  }
+  const userId = Number(parts[1]);
+  if (isNaN(userId)) {
+    await ctx.reply("Invalid user ID.");
+    return;
+  }
+  const message = parts.slice(2).join(" ");
+  if (!message) {
+    await ctx.reply("Message cannot be empty.");
+    return;
+  }
+  try {
+    await ctx.api.sendMessage(userId, message);
+    await ctx.reply(`Message sent to user ${userId}.`);
+  } catch (e) {
+    await ctx.reply("Failed to send message. The user may not be reachable.");
+  }
 });
 
 bot.catch((err) => {
